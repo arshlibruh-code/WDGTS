@@ -76,7 +76,8 @@ const map = new maptilersdk.Map({
   projection: "globe", // Start with 2D for fastest loading
   projectionControl: true, // Disable projection control initially
   terrainControl: true,
-  terrain: false,
+  terrain: true,
+  terrainExaggeration: 1.5,
 });
 
 // Simple error handling - ignore common errors
@@ -94,6 +95,18 @@ map.on('error', (e) => {
       (e.error.message.includes('429') || 
        e.error.message.includes('Failed to fetch') ||
        e.error.message.includes('CORS'))) {
+    return;
+  }
+  
+  // Ignore terrain source duplication errors
+  if (e.error && e.error.message && 
+      e.error.message.includes('Source "maptiler-terrain" already exists')) {
+    return;
+  }
+  
+  // Ignore render loop errors
+  if (e.error && e.error.message && 
+      e.error.message.includes('Attempting to run(), but is already running')) {
     return;
   }
   

@@ -92,9 +92,10 @@ class TerraDrawManager {
     });
 
     this.setupEventListeners();
-    this.terraDraw.start();
-    this.isActive = true;
-    this.setMode(this.currentMode);
+    // Don't start TerraDraw automatically - let user activate it manually
+    // this.terraDraw.start();
+    // this.isActive = true;
+    // this.setMode(this.currentMode);
   }
 
   setupEventListeners() {
@@ -134,6 +135,14 @@ class TerraDrawManager {
         this.deleteSelectedFeatures();
       }
     });
+  }
+
+  start() {
+    if (!this.isActive && this.terraDraw) {
+      this.terraDraw.start();
+      this.isActive = true;
+      console.log('🎨 TerraDraw started');
+    }
   }
 
   setMode(mode) {

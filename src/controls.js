@@ -1,5 +1,6 @@
 // Simple Real-time Map Controls
 import TerraDrawManager from './terradraw.js';
+import { config } from './config.js';
 
 class MapControls {
   constructor(map) {
@@ -8,6 +9,8 @@ class MapControls {
     this.zoomFadeTimer = null; // Add timer for zoom fade-out
     this.pitchFadeTimer = null; // Add timer for pitch fade-out
     this.compassFadeTimer = null; // Add timer for compass ring fade-out
+    this.altitudeFadeTimer = null; // Timer for altitude fade-out
+    this.elevationDebounceTimer = null; // Timer for elevation API debouncing
     this.terraDrawManager = null;
     this.loadControls();
   }
@@ -76,6 +79,7 @@ class MapControls {
     this.map.on('move', () => {
       this.showCoordinates();
       this.updateDisplay();
+      this.showAltitudeLevel();
     });
     this.map.on('zoom', () => {
       // Track zoom direction for SFX with mechanical snap points
@@ -108,14 +112,19 @@ class MapControls {
     this.map.on('pitch', () => {
       this.showCoordinates();
       this.showPitchLevel();
+      this.showAltitudeLevel();
       this.showCompassRing(); // Update compass ring 3D tilt on pitch changes
       this.updateDisplay();
     });
     this.map.on('rotate', () => {
       this.showCoordinates();
+      this.showAltitudeLevel();
       this.showCompassRing();
       this.updateDisplay();
     });
+
+    // Right-click drag detection for pitch and bearing SFX
+    this.setupRightClickDragSFX();
 
     // Terra Draw keyboard shortcut (Shift+A)
     document.addEventListener('keydown', (e) => {
@@ -196,6 +205,70 @@ class MapControls {
     this.pitchFadeTimer = setTimeout(() => {
       pitchPill.style.opacity = '0.20';
     }, 1000);
+  }
+
+  // Show altitude level with debounced API calls
+  showAltitudeLevel() {
+    // Clear any existing debounce timer
+    if (this.elevationDebounceTimer) {
+      clearTimeout(this.elevationDebounceTimer);
+    }
+    
+    // Set new debounce timer - only call API after 100ms of no movement
+    this.elevationDebounceTimer = setTimeout(() => {
+      this.updateAltitudeDisplay();
+    }, 100);
+  }
+
+  // Actually update the altitude display (called after debounce)
+  updateAltitudeDisplay() {
+    const altitudePill = document.getElementById('altitude-pill');
+    const altitudeValue = document.getElementById('altitude-value');
+    const altitudeLineFill = document.getElementById('altitude-line-fill');
+    const altitudeContent = document.querySelector('.altitude-content');
+    
+    // Get current altitude (0 to 9400m)
+    this.getCurrentAltitude().then(currentAltitude => {
+      // Update altitude value
+      altitudeValue.textContent = currentAltitude.toFixed(0) + 'm';
+      
+      // Calculate fill percentage (0 to 100%)
+      const fillPercent = (currentAltitude / 9400) * 100;
+      altitudeLineFill.style.height = fillPercent + '%';
+      
+      // Move the content (icon + text) to follow the fill position
+      // Calculate position from bottom (0% = bottom, 100% = top)
+      const contentPosition = (fillPercent / 100) * 100; // Convert to pixels from bottom
+      altitudeContent.style.bottom = contentPosition + 'px';
+      
+      // Show the altitude pill immediately
+      altitudePill.style.opacity = '1';
+      
+      // Clear any existing timer
+      if (this.altitudeFadeTimer) {
+        clearTimeout(this.altitudeFadeTimer);
+      }
+      
+      // Set new timer to fade to subtle opacity after 1 second
+      this.altitudeFadeTimer = setTimeout(() => {
+        altitudePill.style.opacity = '0.20';
+      }, 1000);
+    });
+  }
+
+  // Get current altitude using MapTiler SDK
+  async getCurrentAltitude() {
+    const center = this.map.getCenter();
+    try {
+      // Use MapTiler SDK elevation method
+      const elevatedPosition = await maptilersdk.elevation.at([center.lng, center.lat]);
+      // elevatedPosition is [lng, lat, elevation]
+      const elevation = Math.max(0, Math.min(9400, elevatedPosition[2] || 0));
+      return elevation;
+    } catch (error) {
+      console.warn('Failed to fetch elevation:', error);
+      return 0; // Default to sea level
+    }
   }
 
   // Show compass ring with 3D rotation and fade-out timer
@@ -389,7 +462,12 @@ class MapControls {
     if (this.terraDrawManager) {
       console.log('🔧 Setting TerraDraw mode to:', mode);
       
-      // TerraDraw is already started in the constructor, just set the mode
+      // Start TerraDraw if it's not already active
+      if (!this.terraDrawManager.isActive) {
+        this.terraDrawManager.start();
+      }
+      
+      // Set the mode
       this.terraDrawManager.setMode(mode);
       
       this.updateTerraDrawStatus();
@@ -573,6 +651,63 @@ class MapControls {
       // Retry after a short delay
       setTimeout(() => this.updateMapClickSound(), 500);
     }
+  }
+
+  setupRightClickDragSFX() {
+    let isRightClickDragging = false;
+    let lastPitch = null;
+    let lastBearing = null;
+    let pitchThreshold = 0.5; // Minimum pitch change to trigger SFX
+    let bearingThreshold = 1.0; // Minimum bearing change to trigger SFX
+
+    // Track right mouse button down
+    this.map.getCanvas().addEventListener('mousedown', (e) => {
+      if (e.button === 2) { // Right mouse button
+        isRightClickDragging = true;
+        lastPitch = this.map.getPitch();
+        lastBearing = this.map.getBearing();
+      }
+    });
+
+    // Track right mouse button up
+    this.map.getCanvas().addEventListener('mouseup', (e) => {
+      if (e.button === 2) { // Right mouse button
+        isRightClickDragging = false;
+      }
+    });
+
+    // Track mouse leave to stop dragging
+    this.map.getCanvas().addEventListener('mouseleave', () => {
+      isRightClickDragging = false;
+    });
+
+    // Listen for pitch changes during right-click drag
+    this.map.on('pitch', () => {
+      if (isRightClickDragging && this.sfxEnabled && lastPitch !== null) {
+        const currentPitch = this.map.getPitch();
+        const pitchChange = Math.abs(currentPitch - lastPitch);
+        
+        if (pitchChange >= pitchThreshold) {
+          this.playZoomSound('in'); // Use zoom-in SFX for pitch
+          console.log('🔊 Pitch sound played!');
+          lastPitch = currentPitch;
+        }
+      }
+    });
+
+    // Listen for bearing changes during right-click drag
+    this.map.on('rotate', () => {
+      if (isRightClickDragging && this.sfxEnabled && lastBearing !== null) {
+        const currentBearing = this.map.getBearing();
+        const bearingChange = Math.abs(currentBearing - lastBearing);
+        
+        if (bearingChange >= bearingThreshold) {
+          this.playZoomSound('in'); // Use zoom-in SFX for bearing
+          console.log('🔊 Bearing sound played!');
+          lastBearing = currentBearing;
+        }
+      }
+    });
   }
 }
 

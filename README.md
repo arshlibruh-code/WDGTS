@@ -4,11 +4,9 @@
 
 <img src="public/cmps-wdgt.gif" width="100%" alt="WDGTS Compass Widget">
 
-*Compass WDGT in action*
-
 <img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget Demo">
 
-*Compass WDGT Demo*
+*Compass WDGT in action*
 
 ## Overview
 
