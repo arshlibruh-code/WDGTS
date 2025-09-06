@@ -280,10 +280,10 @@ body {
 }
 
 .altitude-line {
-  width: 2px;
+  width: 1px;
   height: 107px; /* Much taller for debugging */
   position: relative;
-  background: rgba(0, 170, 255, 0.5); /* More visible background */
+  background: rgba(0, 170, 255, 0.2); /* More visible background */
   overflow: hidden;
 }
 
