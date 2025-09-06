@@ -2,7 +2,9 @@
 
 A sophisticated interactive mapping application featuring a fighter jet-style heads-up display (HUD) system with advanced navigation controls and real-time geospatial data visualization.
 
-![WDGTS Demo](public/demo.gif)
+<img src="public/demo.gif" width="100%" alt="WDGTS Compass">
+
+*WDGT Compass in action*
 
 ## Overview
 
