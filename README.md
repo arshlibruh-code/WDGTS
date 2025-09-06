@@ -2,17 +2,13 @@
 
 **Widgets for Maps** - A comprehensive collection of reusable mapping widgets for modern web applications.
 
-<img src="public/compass-street.gif" width="100%" alt="WDGTS Compass Widget Street">
-
-*Compass WDGT Street Demo*
-
 <img src="public/cmps-wdgt.gif" width="100%" alt="WDGTS Compass Widget">
 
-*Compass WDGT in action*
+<img src="public/compass-street.gif" width="100%" alt="WDGTS Compass Widget Street">
 
 <img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget Demo">
 
-*Compass WDGT in action*
+*Compass WDGT in actionm*
 
 ## Overview
 
