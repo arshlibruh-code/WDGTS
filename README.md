@@ -1,47 +1,70 @@
 # WDGTS
 
-A sophisticated interactive mapping application featuring a fighter jet-style heads-up display (HUD) system with advanced navigation controls and real-time geospatial data visualization.
+**Widgets for Maps** - A comprehensive collection of reusable mapping widgets for modern web applications.
 
-<img src="public/demo.gif" width="100%" alt="WDGTS Compass">
+<img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget">
 
-*WDGT Compass in action*
+*Compass WDGT in action*
 
 ## Overview
 
-WDGTS is a modern web-based mapping application that combines MapTiler SDK with custom HUD elements to create an immersive navigation experience. The application features a centralized crosshair container with real-time coordinate display, zoom controls, pitch indicators, and a 3D compass ring with advanced visual effects.
+WDGTS is a modular widget system designed for developers building GIS and mapping applications. Each widget is a self-contained, reusable component that can be easily integrated into any web application using MapTiler SDK, MapLibre GL, or similar mapping libraries.
 
-## Features
+The system currently features a sophisticated **Compass Widget** with fighter jet-style HUD aesthetics, and we're continuously expanding with new widgets for various mapping and geospatial use cases.
 
-### Navigation System
-- **Real-time Coordinate Display**: Live latitude and longitude coordinates with fade-out animations
+## Available Widgets
+
+### Compass Widget
 - **3D Compass Ring**: Advanced compass with custom dash patterns and 3D rotation effects
+- **Real-time Coordinate Display**: Live latitude and longitude coordinates with fade-out animations
 - **Zoom Controls**: Integrated zoom level display with magnify icon
 - **Pitch Indicator**: Visual pitch angle display with progress bar
 - **Crosshair Targeting**: Centralized crosshair for precise location targeting
+- **Fighter Jet Aesthetic**: Professional HUD styling with cyan blue color scheme
 
-### Interactive Mapping
-- **Multiple Map Styles**: Support for Esri Satellite, OpenStreetMap, MapTiler, and OpenFreeMap styles
-- **Real-time Controls**: Live sliders for longitude, latitude, zoom, pitch, and bearing adjustments
-- **Style Switching**: Keyboard shortcut (S key) for rapid map style changes
-- **Error Handling**: Comprehensive error management for tile loading and API issues
-
-### Drawing and Annotation
-- **TerraDraw Integration**: Full-featured drawing and annotation system
+### Drawing Widget (TerraDraw Integration)
 - **Multiple Drawing Modes**: Points, lines, polygons, rectangles, circles, freehand, and specialized shapes
-- **Data Management**: Local storage integration for saving and loading drawn features
 - **Interactive Editing**: Drag, rotate, and delete capabilities for all drawn elements
+- **Data Management**: Local storage integration for saving and loading drawn features
+- **Professional Toolbar**: Clean, intuitive interface with Material Design icons
 
-### Audio System
+### Audio Widget
 - **Programmatic Sound Effects**: Custom audio generation using Web Audio API
 - **Interactive Feedback**: Sound effects for map clicks and zoom operations
 - **Configurable Audio**: Adjustable frequency, duration, volume, and filter parameters
 - **Mechanical Sound Design**: Realistic mechanical feedback for navigation actions
 
-### User Interface
-- **Fighter Jet Aesthetic**: Professional HUD styling with cyan blue color scheme
-- **Material Design Icons**: Consistent iconography throughout the interface
+## Widget System Features
+
+### Modular Architecture
+- **Self-contained Components**: Each widget operates independently
+- **Easy Integration**: Simple import and initialization for any web application
+- **MapTiler SDK Compatible**: Works seamlessly with MapTiler and MapLibre GL
 - **Responsive Design**: Optimized for various screen sizes and devices
-- **Smooth Animations**: CSS transitions and fade effects for enhanced user experience
+
+### Developer Experience
+- **Clean APIs**: Simple, intuitive widget interfaces
+- **Comprehensive Documentation**: Detailed setup and usage instructions
+- **Customizable Styling**: Flexible theming and appearance options
+- **Performance Optimized**: Efficient rendering and smooth animations
+
+## Roadmap
+
+### Planned Widgets
+- **Scale Widget**: Dynamic scale bar with unit conversion
+- **Layer Control Widget**: Toggle and manage map layers
+- **Search Widget**: Geocoding and location search functionality
+- **Measurement Widget**: Distance and area calculation tools
+- **Navigation Widget**: Turn-by-turn directions and routing
+- **Weather Widget**: Real-time weather overlay integration
+- **Traffic Widget**: Live traffic data visualization
+- **Custom Marker Widget**: Advanced marker management system
+
+### Integration Goals
+- **Framework Support**: React, Vue, Angular, and vanilla JavaScript
+- **Package Managers**: npm, yarn, and CDN distribution
+- **TypeScript Support**: Full type definitions for all widgets
+- **Plugin Architecture**: Easy extension and customization
 
 ## Technical Architecture
 
@@ -93,11 +116,12 @@ Programmatic sound generation:
 ### Prerequisites
 - Node.js (version 16 or higher)
 - npm or yarn package manager
+- MapTiler API key (for mapping functionality)
 
-### Setup
+### Quick Start
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/arshlibruh-code/WDGTS.git
    cd WDGTS
    ```
 
@@ -120,10 +144,20 @@ Programmatic sound generation:
    npm run dev
    ```
 
-5. Build for production:
-   ```bash
-   npm run build
-   ```
+### Widget Integration
+Each widget can be imported and used independently:
+
+```javascript
+// Import specific widgets
+import { CompassWidget } from './src/widgets/compass.js';
+import { DrawingWidget } from './src/widgets/drawing.js';
+import { AudioWidget } from './src/widgets/audio.js';
+
+// Initialize widgets with your map instance
+const compass = new CompassWidget(map);
+const drawing = new DrawingWidget(map);
+const audio = new AudioWidget();
+```
 
 ## Usage
 
