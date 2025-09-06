@@ -1,0 +1,579 @@
+// Simple Real-time Map Controls
+import TerraDrawManager from './terradraw.js';
+
+class MapControls {
+  constructor(map) {
+    this.map = map;
+    this.fadeTimer = null; // Add timer for coordinate fade-out
+    this.zoomFadeTimer = null; // Add timer for zoom fade-out
+    this.pitchFadeTimer = null; // Add timer for pitch fade-out
+    this.compassFadeTimer = null; // Add timer for compass ring fade-out
+    this.terraDrawManager = null;
+    this.loadControls();
+  }
+
+  async loadControls() {
+    try {
+      const response = await fetch('/src/controls.html');
+      const html = await response.text();
+      document.body.insertAdjacentHTML('beforeend', html);
+      
+      // Wait for DOM to be ready, then setup events
+      setTimeout(() => {
+        this.setupEvents();
+        this.updateDisplay();
+        this.initTerraDraw();
+        this.setupTerraDrawToolbar();
+        this.initSFXPanel();
+      }, 50);
+    } catch (error) {
+      console.error('Failed to load controls:', error);
+    }
+  }
+
+  setupEvents() {
+    // Real-time sliders
+    document.getElementById('lng').addEventListener('input', (e) => {
+      const lng = parseFloat(e.target.value);
+      document.getElementById('lng-val').textContent = lng.toFixed(6);
+      this.map.setCenter([lng, this.map.getCenter().lat]);
+    });
+
+    document.getElementById('lat').addEventListener('input', (e) => {
+      const lat = parseFloat(e.target.value);
+      document.getElementById('lat-val').textContent = lat.toFixed(6);
+      this.map.setCenter([this.map.getCenter().lng, lat]);
+    });
+
+    document.getElementById('zoom').addEventListener('input', (e) => {
+      const zoom = parseFloat(e.target.value);
+      document.getElementById('zoom-val').textContent = zoom.toFixed(3);
+      this.map.setZoom(zoom);
+    });
+
+    document.getElementById('pitch').addEventListener('input', (e) => {
+      const pitch = parseFloat(e.target.value);
+      document.getElementById('pitch-val').textContent = pitch.toFixed(3);
+      this.map.setPitch(pitch);
+    });
+
+    document.getElementById('bearing').addEventListener('input', (e) => {
+      const bearing = parseFloat(e.target.value);
+      document.getElementById('bearing-val').textContent = bearing.toFixed(3);
+      this.map.setBearing(bearing);
+    });
+
+    document.getElementById('style').addEventListener('change', (e) => {
+      const style = this.getStyle(e.target.value);
+      this.map.setStyle(style);
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      this.reset();
+    });
+
+    // Update display when map moves - show coordinates on movement
+    this.map.on('move', () => {
+      this.showCoordinates();
+      this.updateDisplay();
+    });
+    this.map.on('zoom', () => {
+      // Track zoom direction for SFX with mechanical snap points
+      const currentZoom = this.map.getZoom();
+      
+      if (this.previousZoom !== null && this.sfxEnabled) {
+        // Snap to 1st decimal precision (mechanical compass ring feel)
+        const currentSnap = Math.floor(currentZoom * 10) / 10;  // 1.234 → 1.2
+        const previousSnap = Math.floor(this.previousZoom * 10) / 10;  // 1.199 → 1.1
+        
+        // Only play sound when crossing 0.1 boundaries
+        if (currentSnap !== previousSnap) {
+          if (currentSnap > previousSnap) {
+            // ZOOM IN - crossed to higher snap point
+            this.playZoomSound('in');
+          } else if (currentSnap < previousSnap) {
+            // ZOOM OUT - crossed to lower snap point
+            this.playZoomSound('out');
+          }
+        }
+      }
+      
+      this.previousZoom = currentZoom;
+      
+      // existing behavior
+      this.showCoordinates();
+      this.showZoomLevel();
+      this.updateDisplay();
+    });
+    this.map.on('pitch', () => {
+      this.showCoordinates();
+      this.showPitchLevel();
+      this.showCompassRing(); // Update compass ring 3D tilt on pitch changes
+      this.updateDisplay();
+    });
+    this.map.on('rotate', () => {
+      this.showCoordinates();
+      this.showCompassRing();
+      this.updateDisplay();
+    });
+
+    // Terra Draw keyboard shortcut (Shift+A)
+    document.addEventListener('keydown', (e) => {
+      if (e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        this.toggleTerraDraw();
+      }
+    });
+  }
+
+  // Show coordinates with fade-out timer
+  showCoordinates() {
+    const coordsPill = document.getElementById('coords-pill');
+    
+    // Show the coordinates immediately
+    coordsPill.style.opacity = '1';
+    
+    // Clear any existing timer
+    if (this.fadeTimer) {
+      clearTimeout(this.fadeTimer);
+    }
+    
+    // Set new timer to fade to subtle opacity after 1 second
+    this.fadeTimer = setTimeout(() => {
+      coordsPill.style.opacity = '0.20';
+    }, 1000);
+  }
+
+  // Show zoom level with fade-out timer
+  showZoomLevel() {
+    const zoomPill = document.getElementById('zoom-pill');
+    const zoomValue = document.getElementById('pill-zoom');
+    
+    // Update zoom value to 2 decimal places
+    const currentZoom = this.map.getZoom();
+    zoomValue.textContent = currentZoom.toFixed(2);
+    
+    // Show the zoom pill immediately
+    zoomPill.style.opacity = '1';
+    
+    // Clear any existing timer
+    if (this.zoomFadeTimer) {
+      clearTimeout(this.zoomFadeTimer);
+    }
+    
+    // Set new timer to fade to subtle opacity after 1 second
+    this.zoomFadeTimer = setTimeout(() => {
+      zoomPill.style.opacity = '0.20';
+    }, 1000);
+  }
+
+  // Show pitch level with fade-out timer
+  showPitchLevel() {
+    const pitchPill = document.getElementById('pitch-pill');
+    const pitchValue = document.getElementById('pitch-value');
+    
+    // Update pitch value
+    const currentPitch = this.map.getPitch();
+    pitchValue.textContent = currentPitch.toFixed(1) + '°';
+    
+    // Update pitch progress bar
+    const pitchBarFill = document.getElementById('pitch-bar-fill');
+    if (pitchBarFill) {
+      const maxPitch = this.map.getMaxPitch();
+      const pitchPercent = (currentPitch / maxPitch) * 100;
+      pitchBarFill.style.width = pitchPercent + '%';
+    }
+    
+    // Show the pitch pill immediately
+    pitchPill.style.opacity = '1';
+    
+    // Clear any existing timer
+    if (this.pitchFadeTimer) {
+      clearTimeout(this.pitchFadeTimer);
+    }
+    
+    // Set new timer to fade to subtle opacity after 1 second
+    this.pitchFadeTimer = setTimeout(() => {
+      pitchPill.style.opacity = '0.20';
+    }, 1000);
+  }
+
+  // Show compass ring with 3D rotation and fade-out timer
+  showCompassRing() {
+    const compassRing = document.getElementById('compass-ring');
+    
+    if (!compassRing) return;
+    
+    // Get current bearing and pitch
+    const bearing = this.map.getBearing();
+    const pitch = this.map.getPitch();
+    
+    // Calculate 3D rotation
+    // Invert bearing so compass ring rotates opposite to map rotation
+    const rotationZ = -bearing; // Negative bearing to counteract map rotation
+    const tiltX = pitch; // Direct pitch mapping - simple forward/backward tilt
+    const tiltY = 0;     // No Y-axis rotation - keep it simple like a real compass
+    
+    // Apply 3D transform - rotate around own center, then tilt
+    compassRing.style.transform = `
+      translate(-50%, -50%) 
+      rotateX(${tiltX}deg) 
+      rotateZ(${rotationZ}deg)
+    `;
+    
+    // Show the compass ring immediately
+    compassRing.style.opacity = '1';
+    // Show full compass (stroke and all markers)
+    compassRing.querySelector('.ring-stroke').style.opacity = '1';
+    compassRing.querySelectorAll('.main-marker').forEach(marker => {
+      marker.style.opacity = '1';
+    });
+    // Show the ⨻ marker above N
+    compassRing.querySelector('.north-x-marker').style.opacity = '1';
+    
+    // Clear any existing timer
+    if (this.compassFadeTimer) {
+      clearTimeout(this.compassFadeTimer);
+    }
+    
+    // Set new timer to fade to subtle opacity after 1 second
+    this.compassFadeTimer = setTimeout(() => {
+      compassRing.style.opacity = '0.20';
+      // Hide stroke and show only N marker and ⨻
+      compassRing.querySelector('.ring-stroke').style.opacity = '0';
+      compassRing.querySelectorAll('.main-marker:not(.north)').forEach(marker => {
+        marker.style.opacity = '0';
+      });
+      compassRing.querySelector('.main-marker.north').style.opacity = '1';
+      compassRing.querySelector('.north-x-marker').style.opacity = '1';
+    }, 1000);
+  }
+
+
+  getStyle(name) {
+    const styles = {
+      // New free basemaps
+      'ESRI_SATELLITE': {
+        version: 8,
+        sources: {
+          'esri-satellite': {
+            type: 'raster',
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+            tileSize: 256,
+            attribution: '© Esri'
+          }
+        },
+        layers: [{
+          id: 'esri-satellite',
+          type: 'raster',
+          source: 'esri-satellite'
+        }]
+      },
+      'OSM': {
+        version: 8,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors'
+          }
+        },
+        layers: [{
+          id: 'osm',
+          type: 'raster',
+          source: 'osm'
+        }]
+      },
+      // Existing MapTiler styles
+      'STREETS.DARK': maptilersdk.MapStyle.STREETS.DARK,
+      'STREETS': maptilersdk.MapStyle.STREETS,
+      'SATELLITE': maptilersdk.MapStyle.SATELLITE,
+      'HYBRID': maptilersdk.MapStyle.HYBRID,
+      // OpenFreeMap styles
+      'OFM_LIBERTY': 'https://tiles.openfreemap.org/styles/liberty',
+      'OFM_BRIGHT': 'https://tiles.openfreemap.org/styles/bright',
+      'OFM_POSITRON': 'https://tiles.openfreemap.org/styles/positron',
+      'OFM_FIORD': 'https://tiles.openfreemap.org/styles/fiord'
+    };
+    return styles[name] || styles['ESRI_SATELLITE']; // Default to Esri Satellite
+  }
+
+  updateDisplay() {
+    const center = this.map.getCenter();
+    const zoom = this.map.getZoom();
+    const pitch = this.map.getPitch();
+    const bearing = this.map.getBearing();
+
+    // Update sliders
+    document.getElementById('lng').value = center.lng.toFixed(6);
+    document.getElementById('lat').value = center.lat.toFixed(6);
+    document.getElementById('zoom').value = zoom.toFixed(3);
+    document.getElementById('pitch').value = pitch.toFixed(3);
+    document.getElementById('bearing').value = bearing.toFixed(3);
+
+    // Update slider values
+    document.getElementById('lng-val').textContent = center.lng.toFixed(6);
+    document.getElementById('lat-val').textContent = center.lat.toFixed(6);
+    document.getElementById('zoom-val').textContent = zoom.toFixed(3);
+    document.getElementById('pitch-val').textContent = pitch.toFixed(3);
+    document.getElementById('bearing-val').textContent = bearing.toFixed(3);
+
+    // Center coordinates are now only shown in the crosshair pill
+
+    // Update coordinates pill above crosshair
+    document.getElementById('pill-lat').textContent = center.lat.toFixed(6);
+    document.getElementById('pill-lng').textContent = center.lng.toFixed(6);
+  }
+
+  reset() {
+    this.map.setCenter([0, 20]);
+    this.map.setZoom(3);
+    this.map.setPitch(0);
+    this.map.setBearing(0);
+    this.map.setStyle(this.getStyle('ESRI_SATELLITE')); // Reset to Esri Satellite
+    this.updateDisplay();
+  }
+
+  // Terra Draw Integration
+  initTerraDraw() {
+    // Wait for map style to load before initializing TerraDraw
+    if (this.map.isStyleLoaded()) {
+      this.createTerraDrawManager();
+    } else {
+      this.map.on('style.load', () => {
+        this.createTerraDrawManager();
+      });
+    }
+  }
+
+  createTerraDrawManager() {
+    try {
+      this.terraDrawManager = new TerraDrawManager(this.map, maptilersdk);
+      console.log('Terra Draw initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Terra Draw:', error);
+    }
+  }
+
+  setupTerraDrawToolbar() {
+    // Connect toolbar buttons to TerraDraw
+    const toolbarButtons = document.querySelectorAll('.toolbar-btn[data-mode]');
+    toolbarButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const mode = button.getAttribute('data-mode');
+        console.log('🔧 Toolbar button clicked:', mode);
+        this.setTerraDrawMode(mode);
+        this.updateToolbarSelection(button);
+      });
+    });
+
+    // Connect data management buttons
+    const saveBtn = document.getElementById('save-btn');
+    const loadBtn = document.getElementById('load-btn');
+    const clearBtn = document.getElementById('clear-btn');
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => this.saveToLocalStorage());
+    }
+    if (loadBtn) {
+      loadBtn.addEventListener('click', () => this.loadFromLocalStorage());
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => this.clearAllFeatures());
+    }
+  }
+
+  setTerraDrawMode(mode) {
+    if (this.terraDrawManager) {
+      console.log('🔧 Setting TerraDraw mode to:', mode);
+      
+      // TerraDraw is already started in the constructor, just set the mode
+      this.terraDrawManager.setMode(mode);
+      
+      this.updateTerraDrawStatus();
+    }
+  }
+
+  updateToolbarSelection(activeButton) {
+    // Remove active class from all buttons
+    document.querySelectorAll('.toolbar-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Add active class to clicked button
+    if (activeButton) {
+      activeButton.classList.add('active');
+    }
+  }
+
+  saveToLocalStorage() {
+    if (this.terraDrawManager) {
+      const features = this.terraDrawManager.terraDraw.getSnapshot();
+      const filteredFeatures = features.filter(f => !f.properties.midPoint && !f.properties.selectionPoint);
+      localStorage.setItem('terra-draw-data', JSON.stringify(filteredFeatures));
+      this.showNotification('Data saved to local storage');
+    }
+  }
+
+  loadFromLocalStorage() {
+    if (this.terraDrawManager) {
+      const savedData = localStorage.getItem('terra-draw-data');
+      if (savedData) {
+        const features = JSON.parse(savedData);
+        this.terraDrawManager.terraDraw.addFeatures(features);
+        this.showNotification('Data loaded from local storage');
+      } else {
+        this.showNotification('No saved data found');
+      }
+    }
+  }
+
+  clearAllFeatures() {
+    if (this.terraDrawManager) {
+      this.terraDrawManager.terraDraw.clear();
+      this.showNotification('All features cleared');
+    }
+  }
+
+  showNotification(message) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'terradraw-notification';
+    notification.innerHTML = `
+      <span class="material-icons">info</span>
+      <span class="notification-text">${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.remove();
+    }, 3000);
+  }
+
+  toggleTerraDraw() {
+    if (this.terraDrawManager) {
+      // Since TerraDraw is always active now, just switch to polygon mode
+      this.terraDrawManager.setMode('polygon');
+      this.updateTerraDrawStatus();
+    }
+  }
+
+  updateTerraDrawStatus() {
+    if (this.terraDrawManager) {
+      const statusElement = document.getElementById('terradraw-status');
+      const statusText = statusElement.querySelector('.status-text');
+      
+      if (this.terraDrawManager.isActive) {
+        statusText.textContent = `${this.terraDrawManager.currentMode} mode`;
+        statusElement.querySelector('.material-icons').textContent = 'edit';
+      } else {
+        statusText.textContent = 'Ready';
+        statusElement.querySelector('.material-icons').textContent = 'pan_tool';
+      }
+    }
+  }
+
+  // SFX Panel functionality
+  initSFXPanel() {
+    const sfxToggle = document.getElementById('sfx-toggle');
+    const sfxEvents = document.getElementById('sfx-events');
+    
+    // SFX state
+    this.sfxEnabled = true;
+    this.sfxEvents = {
+      'Map Click': true,
+      'Zoom In': true,
+      'Zoom Out': true
+    };
+    
+    // Track zoom for direction detection
+    this.previousZoom = null;
+    
+    // Toggle SFX on/off
+    sfxToggle.addEventListener('click', () => {
+      this.sfxEnabled = !this.sfxEnabled;
+      this.updateSFXDisplay();
+      this.updateMapClickSound();
+    });
+    
+    // Initial display
+    this.updateSFXDisplay();
+    
+    // Wait for map and SFX to be ready, then setup click sound
+    setTimeout(() => {
+      this.updateMapClickSound();
+    }, 1000);
+  }
+  
+  updateSFXDisplay() {
+    const sfxToggle = document.getElementById('sfx-toggle');
+    const sfxEvents = document.getElementById('sfx-events');
+    
+    // Update toggle button
+    if (this.sfxEnabled) {
+      sfxToggle.textContent = 'ON';
+      sfxToggle.classList.remove('off');
+    } else {
+      sfxToggle.textContent = 'OFF';
+      sfxToggle.classList.add('off');
+    }
+    
+    // Update events display
+    sfxEvents.innerHTML = '';
+    Object.entries(this.sfxEvents).forEach(([event, enabled]) => {
+      const eventDiv = document.createElement('div');
+      eventDiv.className = 'sfx-event';
+      eventDiv.innerHTML = `${event}: <span class="sfx-status ${enabled && this.sfxEnabled ? '' : 'muted'}">${enabled && this.sfxEnabled ? '🔊 Active' : '🔇 Muted'}</span>`;
+      sfxEvents.appendChild(eventDiv);
+    });
+  }
+  
+  playZoomSound(direction) {
+    if (!this.sfxEnabled || !window.playWhoosh) return;
+    
+    // Get the appropriate preset
+    const preset = direction === 'in' ? window.zoomInPreset : window.zoomOutPreset;
+    
+    if (preset) {
+      // Temporarily apply zoom preset
+      const originalParams = { ...window.audioParams };
+      Object.assign(window.audioParams, preset);
+      
+      // Play the sound
+      window.playWhoosh();
+      console.log(`🔊 Zoom ${direction} sound played!`);
+      
+      // Restore original params
+      Object.assign(window.audioParams, originalParams);
+    }
+  }
+  
+  updateMapClickSound() {
+    // Remove ALL existing click listeners
+    this.map.off('click');
+    
+    // Add click listener only if SFX is enabled and playWhoosh is available
+    if (this.sfxEnabled && window.playWhoosh) {
+      this.map.on('click', (e) => {
+        // Only play if SFX is still enabled (double check)
+        if (this.sfxEnabled && window.playWhoosh) {
+          window.playWhoosh();
+          console.log('🔊 Map click sound played!');
+        }
+      });
+      console.log('🎵 Map click sound ENABLED');
+    } else if (!this.sfxEnabled) {
+      console.log('🔇 Map click sound DISABLED');
+    } else if (!window.playWhoosh) {
+      console.log('⚠️ SFX not ready yet, retrying...');
+      // Retry after a short delay
+      setTimeout(() => this.updateMapClickSound(), 500);
+    }
+  }
+}
+
+export default MapControls;

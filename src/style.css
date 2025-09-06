@@ -1,0 +1,539 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Quantico, sans-serif;
+}
+
+#map {
+  width: 100%;
+  height: 100vh;
+  /* background: #323232; */
+}
+
+/* Controls Panel */
+.controls-panel {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: #323232;
+  color: white;
+  padding: 15px;
+  border: 2px solid white;
+  font-family: monospace;
+  font-size: 12px;
+  z-index: 1000;
+  width: 200px;
+}
+
+.controls-header {
+  margin-bottom: 10px;
+  text-align: center;
+  color: #00ff00;
+}
+
+.controls-group {
+  margin-bottom: 10px;
+}
+
+.controls-slider {
+  width: 100%;
+}
+
+.controls-select {
+  width: 100%;
+  padding: 5px;
+  background: #323232;
+  color: white;
+  border: 1px solid white;
+}
+
+.controls-button {
+  width: 100%;
+  padding: 8px;
+  background: #ff4444;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* Crosshair Container */
+.crosshair-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px; /* 24px * 2 scale */
+  height: 48px; /* 24px * 2 scale */
+  z-index: 1001;
+  pointer-events: none;
+  filter: brightness(2);
+  /* mix-blend-mode: multiply; */
+}
+
+/* Crosshair */
+.crosshair {
+  width: 100%;
+  height: 100%;
+}
+
+.crosshair img {
+  width: 100%;
+  height: 100%;
+}
+
+/* Coordinates Pill */
+.coords-pill {
+  position: absolute;
+  top: -24px; /* Offset above the crosshair */
+  left: 50%;
+  transform: translateX(-50%);
+  color: #00aaff;
+  font-family: monospace;
+  font-size: 8px;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease-in-out;
+  white-space: nowrap;
+}
+
+.zoom-pill {
+  position: absolute;
+  top: 48px; /* Offset below the crosshair */
+  left: 50%;
+  transform: translateX(-50%);
+  color: #00aaff;
+  font-family: monospace;
+  font-size: 8px;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease-in-out;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.zoom-icon {
+  font-size: 12px !important;
+  color: #00aaff;
+}
+
+#pill-zoom {
+  font-size: 8px;
+  color: #00aaff;
+  font-family: monospace;
+}
+
+
+/* Pitch Pill - Below zoom pill in crosshair container */
+.pitch-pill {
+  position: absolute;
+  top: 72px; /* Below the zoom pill */
+  left: 50%;
+  transform: translateX(-50%);
+  color: #00aaff;
+  font-family: monospace;
+  font-size: 8px;
+  pointer-events: none;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.1s linear;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  opacity: 0.20; /* Start dimmed like other pills */
+}
+
+.pitch-pill #pitch-value {
+  font-size: 8px;
+}
+
+.pitch-progress {
+  width: 34px;
+  height: 1px;
+  background: rgba(0, 170, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pitch-progress-fill {
+  height: 100%;
+  background: #00aaff;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.pitch-range {
+  font-size: 7px;
+  opacity: 0.7;
+}
+
+/* Compass Ring */
+.compass-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 240px; /* 3x the 48px crosshair */
+  height: 240px;
+  opacity: 0.10; /* Start dimmed like other pills */
+  transition: opacity 0.3s ease-in-out;
+  z-index: 999; /* Behind crosshair */
+  pointer-events: none;
+}
+
+/* Start in faded state by default */
+.compass-ring .ring-stroke {
+  opacity: 0;
+}
+
+.compass-ring .main-marker:not(.north) {
+  opacity: 0;
+}
+
+.compass-ring .main-marker.north {
+  opacity: 1;
+}
+
+.ring-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ring-stroke {
+  fill: none;
+  stroke: #00aaff;
+  stroke-width: 1;
+  stroke-dasharray: 1 7 3 7; /* 15° segments (360° ÷ 24 dashes = 15° each) */
+  filter: drop-shadow(0 0 3px rgba(0, 170, 255, 0.6));
+  transition: opacity 0.3s ease-in-out;
+}
+
+.main-marker {
+  fill: #00aaff;
+  font-family: 'Quantico', monospace;
+  font-size: 9px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  filter: drop-shadow(0 0 2px rgba(0, 170, 255, 0.8));
+}
+
+.north-x-marker {
+  fill: #00aaff;
+  font-family: 'Quantico', monospace;
+  font-size: 6px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  filter: drop-shadow(0 0 2px rgba(0, 170, 255, 0.8));
+  opacity: 1; /* Always visible like the N marker */
+}
+
+/* Faded state - hide stroke and non-N markers */
+.compass-ring.faded .ring-stroke {
+  opacity: 0;
+}
+
+.compass-ring.faded .main-marker:not(.north) {
+  opacity: 0;
+}
+
+.compass-ring.faded .main-marker.north {
+  opacity: 1;
+}
+
+
+/* Terra Draw Custom Toolbar Styling */
+.terradraw-toolbar {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.terradraw-toolbar:hover {
+  border-color: rgba(0, 170, 255, 0.6);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+}
+
+.toolbar-section {
+  display: flex;
+  gap: 4px;
+  padding: 0 8px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  align-items: center;
+}
+
+.toolbar-section:last-child {
+  border-right: none;
+}
+
+.toolbar-section.toolbar-status {
+  padding: 0 12px;
+  min-width: 120px;
+}
+
+.toolbar-btn {
+  background: transparent;
+  border: 1px solid #00aaff;
+  color: #00aaff;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.toolbar-btn:hover {
+  background: rgba(0, 170, 255, 0.1);
+  border-color: #00aaff;
+  color: #00aaff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 170, 255, 0.3);
+}
+
+.toolbar-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 170, 255, 0.2);
+}
+
+.toolbar-btn.active {
+  background: #00aaff;
+  color: white;
+  border-color: #00aaff;
+  box-shadow: 0 2px 8px rgba(0, 170, 255, 0.4);
+}
+
+.toolbar-btn.active:hover {
+  background: #0088cc;
+  border-color: #0088cc;
+}
+
+.toolbar-btn.has-selection {
+  background: rgba(255, 193, 7, 0.2);
+  border-color: #ffc107;
+  color: #ffc107;
+}
+
+.toolbar-btn.has-selection:hover {
+  background: rgba(255, 193, 7, 0.3);
+}
+
+.toolbar-btn .material-icons {
+  font-size: 20px;
+  transition: transform 0.2s ease;
+}
+
+.toolbar-btn:hover .material-icons {
+  transform: scale(1.1);
+}
+
+/* Status Indicator */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #00aaff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-indicator .material-icons {
+  font-size: 16px;
+}
+
+.status-text {
+  white-space: nowrap;
+}
+
+/* Notification */
+.terradraw-notification {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: #00aaff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1001;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: slideInDown 0.3s ease;
+}
+
+.terradraw-notification .material-icons {
+  font-size: 18px;
+}
+
+.notification-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .terradraw-toolbar {
+    top: 10px;
+    left: 10px;
+    padding: 6px;
+    gap: 6px;
+  }
+  
+  .toolbar-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .toolbar-btn .material-icons {
+    font-size: 18px;
+  }
+  
+  .toolbar-section {
+    padding: 0 6px;
+  }
+  
+  .toolbar-section.toolbar-status {
+    min-width: 100px;
+  }
+  
+  .status-indicator {
+    font-size: 11px;
+  }
+  
+  .status-indicator .material-icons {
+    font-size: 14px;
+  }
+}
+
+/* Terra Draw Overrides */
+.terra-draw {
+  z-index: 1001; /* Higher than toolbar to ensure vertices are visible */
+}
+
+/* Hide default Terra Draw UI if needed */
+.terra-draw-controls {
+  display: none !important;
+}
+
+/* Ensure TerraDraw vertices and selection points are visible */
+.terra-draw .maplibregl-canvas-container {
+  z-index: 1002 !important;
+}
+
+/* Force vertex points to be visible */
+.terra-draw .maplibregl-marker {
+  z-index: 1003 !important;
+}
+
+/* Ensure selection points are visible */
+.terra-draw .selection-point {
+  z-index: 1004 !important;
+}
+
+/* Ensure mid points are visible */
+.terra-draw .mid-point {
+  z-index: 1004 !important;
+}
+
+/* Custom scrollbar for any Terra Draw elements */
+.terra-draw *::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terra-draw *::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.terra-draw *::-webkit-scrollbar-thumb {
+  background: rgba(0, 170, 255, 0.5);
+  border-radius: 3px;
+}
+
+.terra-draw *::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 170, 255, 0.7);
+}
+
+/* SFX Panel Styles */
+.sfx-panel {
+  border: 2px solid #00ff00;
+  border-radius: 5px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+.sfx-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  color: #00ff00;
+  font-weight: bold;
+}
+
+.sfx-toggle-btn {
+  padding: 4px 8px;
+  background: #00ff00;
+  color: black;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.sfx-toggle-btn.off {
+  background: #666;
+  color: white;
+}
+
+.sfx-events {
+  font-size: 10px;
+}
+
+.sfx-event {
+  margin-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sfx-status {
+  color: #00ff00;
+}
+
+.sfx-status.muted {
+  color: #666;
+}

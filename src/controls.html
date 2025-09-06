@@ -1,0 +1,169 @@
+<!-- Controls -->
+<div id="controls" class="controls-panel">
+  <div class="controls-header">
+    <div>🎯 Map Controls</div>
+  </div>
+
+  <div class="controls-group">
+    <div>LONGITUDE: <span id="lng-val">0</span></div>
+    <input type="range" id="lng" min="-180" max="180" step="0.000001" class="controls-slider">
+  </div>
+  
+  <div class="controls-group">
+    <div>LATITUDE: <span id="lat-val">0</span></div>
+    <input type="range" id="lat" min="-90" max="90" step="0.000001" class="controls-slider">
+  </div>
+
+  <div class="controls-group">
+    <div>Zoom: <span id="zoom-val">3</span></div>
+    <input type="range" id="zoom" min="0" max="20" step="0.001" class="controls-slider">
+  </div>
+
+  <div class="controls-group">
+    <div>Pitch: <span id="pitch-val">0</span>°</div>
+    <input type="range" id="pitch" min="0" max="85" step="0.001" class="controls-slider">
+  </div>
+
+  <div class="controls-group">
+    <div>Bearing: <span id="bearing-val">0</span>°</div>
+    <input type="range" id="bearing" min="0" max="360" step="0.001" class="controls-slider">
+  </div>
+
+  <!-- SFX Panel -->
+  <div class="controls-group sfx-panel">
+    <div class="sfx-header">
+      <div>🎵 SFX Controls</div>
+      <button id="sfx-toggle" class="sfx-toggle-btn">ON</button>
+    </div>
+    <div id="sfx-events" class="sfx-events">
+      <div class="sfx-event">Map Click: <span class="sfx-status">🔊 Active</span></div>
+    </div>
+  </div>
+
+  <div class="controls-group">
+    <select id="style" class="controls-select">
+      <option value="ESRI_SATELLITE" selected>🛰️ Esri Satellite</option>
+      <option value="OSM">🗺️ OpenStreetMap</option>
+      <option value="OFM_FIORD">OFM Fiord</option>
+      <option value="OFM_LIBERTY">OFM Liberty</option>
+      <option value="OFM_BRIGHT">OFM Bright</option>
+      <option value="OFM_POSITRON">OFM Positron</option>
+      <option value="STREETS.DARK">MapTiler Dark</option>
+      <option value="STREETS">MapTiler Light</option>
+      <option value="SATELLITE">MapTiler Satellite</option>
+      <option value="HYBRID">MapTiler Hybrid</option>
+    </select>
+  </div>
+
+  <button id="reset" class="controls-button">Reset</button>
+</div>
+
+<!-- Terra Draw Toolbar -->
+<div id="terradraw-toolbar" class="terradraw-toolbar">
+  <!-- Drawing Tools Section -->
+  <div class="toolbar-section">
+    <button class="toolbar-btn" data-mode="point" title="Add Point">
+      <span class="material-icons">place</span>
+    </button>
+    <button class="toolbar-btn" data-mode="linestring" title="Draw Line">
+      <span class="material-icons">show_chart</span>
+    </button>
+    <button class="toolbar-btn" data-mode="polygon" title="Draw Polygon">
+      <span class="material-icons">category</span>
+    </button>
+    <button class="toolbar-btn" data-mode="rectangle" title="Draw Rectangle">
+      <span class="material-icons">crop_square</span>
+    </button>
+    <button class="toolbar-btn" data-mode="circle" title="Draw Circle">
+      <span class="material-icons">radio_button_unchecked</span>
+    </button>
+    <button class="toolbar-btn" data-mode="freehand" title="Freehand Draw">
+      <span class="material-icons">edit</span>
+    </button>
+    <button class="toolbar-btn" data-mode="freehand-linestring" title="Freehand Line">
+      <span class="material-icons">gesture</span>
+    </button>
+    <button class="toolbar-btn" data-mode="angled-rectangle" title="Angled Rectangle">
+      <span class="material-icons">crop_rotate</span>
+    </button>
+    <button class="toolbar-btn" data-mode="sector" title="Sector">
+      <span class="material-icons">pie_chart</span>
+    </button>
+    <button class="toolbar-btn" data-mode="sensor" title="Sensor">
+      <span class="material-icons">sensors</span>
+    </button>
+  </div>
+  
+  <!-- Edit Tools Section -->
+  <div class="toolbar-section">
+    <button class="toolbar-btn" data-mode="select" title="Select/Edit/Delete">
+      <span class="material-icons">touch_app</span>
+    </button>
+  </div>
+  
+  <!-- Data Management Section -->
+  <div class="toolbar-section">
+    <button class="toolbar-btn" id="save-btn" title="Save to Local Storage">
+      <span class="material-icons">save</span>
+    </button>
+    <button class="toolbar-btn" id="load-btn" title="Load from Local Storage">
+      <span class="material-icons">folder_open</span>
+    </button>
+    <button class="toolbar-btn" id="clear-btn" title="Clear All Features">
+      <span class="material-icons">clear_all</span>
+    </button>
+  </div>
+  
+  <!-- Status Section -->
+  <div class="toolbar-section toolbar-status">
+    <div class="status-indicator" id="terradraw-status">
+      <span class="material-icons">pan_tool</span>
+      <span class="status-text">Ready</span>
+    </div>
+  </div>
+</div>
+
+<!-- Crosshair Container -->
+<div id="crosshair-container" class="crosshair-container">
+  <!-- Coordinates -->
+  <div id="coords-pill" class="coords-pill">
+    <div><span id="pill-lat">0.000000</span></div>
+    <div><span id="pill-lng">0.000000</span></div>
+  </div>
+  
+  <!-- Crosshair -->
+  <div id="crosshair" class="crosshair">
+    <img src="/crosshair.svg" alt="Crosshair" />
+  </div>
+  
+  <!-- Zoom Level -->
+  <div id="zoom-pill" class="zoom-pill">
+    <span class="material-icons zoom-icon">zoom_in</span>
+    <span id="pill-zoom">3.00</span>
+  </div>
+  
+  <!-- Pitch Info -->
+  <div id="pitch-pill" class="pitch-pill">
+    <span id="pitch-value">0.0°</span>
+    <div class="pitch-progress">
+      <div class="pitch-progress-fill" id="pitch-bar-fill"></div>
+    </div>
+  </div>
+  
+  <!-- Compass Ring -->
+  <div id="compass-ring" class="compass-ring">
+    <svg class="ring-svg" viewBox="0 0 144 144">
+      <!-- Dashed ring with 15° segments -->
+      <circle class="ring-stroke" cx="72" cy="72" r="70" />
+      <!-- Main markers -->
+      <g class="markers">
+        <text class="main-marker north" x="72" y="20">N</text>
+        <text class="main-marker east" x="124" y="76">E</text>
+        <text class="main-marker south" x="72" y="132">S</text>
+        <text class="main-marker west" x="20" y="76">W</text>
+        <!-- Small ⨻ above N -->
+        <text class="north-x-marker" x="72" y="8">⨻</text>
+      </g>
+    </svg>
+  </div>
+</div>

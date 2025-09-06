@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test SFX</title>
+</head>
+<body>
+    <h1>🎵 SFX Test</h1>
+    
+    <div style="margin: 20px 0;">
+        <label for="pitch-slider" style="display: block; margin-bottom: 10px; font-size: 16px;">
+            🎛️ Pitch Control: <span id="pitch-value">800</span> Hz
+        </label>
+        <input type="range" id="pitch-slider" min="100" max="2000" value="800" 
+               style="width: 300px; height: 20px;">
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <label for="dur-slider" style="display: block; margin-bottom: 10px; font-size: 16px;">
+            ⏱️ Duration: <span id="dur-value">0.1</span>s
+        </label>
+        <input type="range" id="dur-slider" min="0.05" max="1.0" step="0.05" value="0.1" 
+               style="width: 300px; height: 20px;">
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <label for="vol-slider" style="display: block; margin-bottom: 10px; font-size: 16px;">
+            �� Volume: <span id="vol-value">40</span>%
+        </label>
+        <input type="range" id="vol-slider" min="0" max="100" value="40" 
+               style="width: 300px; height: 20px;">
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <label style="display: block; margin-bottom: 10px; font-size: 16px;">
+            🥁 Beat Pattern:
+        </label>
+        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <button class="beat-tab" data-beats="1" style="padding: 10px 15px; border: 2px solid #00ff00; background: #00ff00; color: black; cursor: pointer; border-radius: 5px;">1 Beat</button>
+            <button class="beat-tab" data-beats="2" style="padding: 10px 15px; border: 2px solid #333; background: #333; color: white; cursor: pointer; border-radius: 5px;">2 Beats</button>
+            <button class="beat-tab" data-beats="4" style="padding: 10px 15px; border: 2px solid #333; background: #333; color: white; cursor: pointer; border-radius: 5px;">4 Beats</button>
+            <button class="beat-tab" data-beats="6" style="padding: 10px 15px; border: 2px solid #333; background: #333; color: white; cursor: pointer; border-radius: 5px;">6 Beats</button>
+            <button class="beat-tab" data-beats="8" style="padding: 10px 15px; border: 2px solid #333; background: #333; color: white; cursor: pointer; border-radius: 5px;">8 Beats</button>
+        </div>
+    </div>
+    
+<!-- Simple Wave Type Tabs -->
+<div style="margin: 20px 0;">
+    <label style="display: block; margin-bottom: 10px; font-size: 16px;">
+        🌊 Wave Type:
+    </label>
+    
+    <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+        <button class="wave-tab" data-wave="sine" style="padding: 10px 15px; border: 2px solid #00ff00; background: #00ff00; color: black; cursor: pointer; border-radius: 5px;">Sine</button>
+        <button class="wave-tab" data-wave="square" style="padding: 10px 15px; border: 2px solid #333; background: #333; color: white; cursor: pointer; border-radius: 5px;">Square</button>
+        <button class="wave-tab" data-wave="sawtooth" style="padding: 10px 15px; border: 2px solid #333; background: #333; color: white; cursor: pointer; border-radius: 5px;">Sawtooth</button>
+        <button class="wave-tab" data-wave="triangle" style="padding: 10px 15px; border: 2px solid #333; background: #333; color: white; cursor: pointer; border-radius: 5px;">Triangle</button>
+    </div>
+</div>
+    
+    <div style="margin: 20px 0;">
+        <label for="filter-type" style="display: block; margin-bottom: 10px; font-size: 16px;">
+            🎚️ Filter Type:
+        </label>
+        <select id="filter-type" style="width: 300px; padding: 8px; background: #333; color: white; border: 1px solid #00ff00; border-radius: 5px;">
+            <option value="highpass" selected>High Pass</option>
+            <option value="lowpass">Low Pass</option>
+            <option value="bandpass">Band Pass</option>
+            <option value="allpass">All Pass</option>
+        </select>
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <label for="filter-freq-slider" style="display: block; margin-bottom: 10px; font-size: 16px;">
+            ��️ Filter Frequency: <span id="filter-freq-value">1000</span> Hz
+        </label>
+        <input type="range" id="filter-freq-slider" min="100" max="5000" value="1000" 
+               style="width: 300px; height: 20px;">
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <label for="filter-q-slider" style="display: block; margin-bottom: 10px; font-size: 16px;">
+            🎚️ Filter Q: <span id="filter-q-value">10</span>
+        </label>
+        <input type="range" id="filter-q-slider" min="0.1" max="30" step="0.1" value="10" 
+               style="width: 300px; height: 20px;">
+    </div>
+    
+    <div style="margin: 20px 0;">
+        <label style="display: block; margin-bottom: 10px; font-size: 16px;">
+            💾 Presets:
+        </label>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <button id="save-preset" style="padding: 10px 15px; border: 2px solid #00ff00; background: #00ff00; color: black; cursor: pointer; border-radius: 5px;">Save Current</button>
+            <button id="load-preset" style="padding: 10px 15px; border: 2px solid #ff6b6b; background: #ff6b6b; color: white; cursor: pointer; border-radius: 5px;">Load Preset</button>
+            <button id="reset-preset" style="padding: 10px 15px; border: 2px solid #666; background: #666; color: white; cursor: pointer; border-radius: 5px;">Reset</button>
+        </div>
+    </div>
+    
+    <button id="play-btn" style="padding: 20px; font-size: 20px; background: #00ff00; color: black; border: none; cursor: pointer;">
+        ▶️ PLAY (Loop)
+    </button>
+    
+    <!-- Waveform Visualization -->
+    <div style="margin: 20px 0;">
+        <h3>🌊 Waveform Visualization</h3>
+        <canvas id="waveform-canvas" width="600" height="200" 
+                style="border: 2px solid #333; background: #000; display: block;"></canvas>
+    </div>
+    
+    <script type="module">
+        // Import the SFX module
+        import './src/sfx.js';
+        
+        let isPlaying = false;
+        let loopInterval = null;
+        let animationId = null;
+        
+        // Waveform setup
+        const canvas = document.getElementById('waveform-canvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        
+        let playheadStartTime = 0;
+        let isEffectPlaying = false;
+        
+        // Waveform animation
+        function drawWaveform() {
+            // Clear canvas
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < width; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, height);
+                ctx.stroke();
+            }
+            for (let i = 0; i < height; i += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(width, i);
+                ctx.stroke();
+            }
+            
+            // Draw center line
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, height / 2);
+            ctx.lineTo(width, height / 2);
+            ctx.stroke();
+            
+            // Calculate total effect duration
+            if (window.audioParams) {
+                const beatCount = window.audioParams.beatCount || 1;
+                const totalDuration = window.audioParams.duration; // Total duration is the duration setting
+                const gap = beatCount > 1 ? (totalDuration * 0.1) / (beatCount - 1) : 0; // 10% of duration for gaps
+                const beatDuration = (totalDuration - (gap * (beatCount - 1))) / beatCount;
+                
+                // Draw waveform for the total duration
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                
+                for (let x = 0; x < width; x++) {
+                    const time = (x / width) * totalDuration;
+                    let wave = 0;
+                    
+                    // Check if we're in a sound period
+                    for (let beat = 0; beat < beatCount; beat++) {
+                        const beatStart = beat * (beatDuration + gap);
+                        const beatEnd = beatStart + beatDuration;
+                        
+                        if (time >= beatStart && time <= beatEnd) {
+                            // Generate wave for this beat
+                            const beatTime = time - beatStart;
+                            const frequency = window.audioParams.frequency;
+                            const t = beatTime * frequency * 2 * Math.PI;
+                            
+                            switch(window.audioParams.baseWave) {
+                                case 'sine': wave = Math.sin(t); break;
+                                case 'square': wave = Math.sign(Math.sin(t)); break;
+                                case 'sawtooth': wave = (t % (2 * Math.PI)) / Math.PI - 1; break;
+                                case 'triangle': wave = Math.abs(Math.sin(t)) * 2 - 1; break;
+                            }
+                            
+                            // Apply envelope (fade in/out)
+                            const envelope = Math.min(1, beatTime / 0.01) * Math.min(1, (beatDuration - beatTime) / 0.05);
+                            wave *= envelope;
+                            break;
+                        }
+                    }
+                    
+                    const y = (height / 2) + (wave * height / 4);
+                    
+                    if (x === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+                
+                // Draw playhead if effect is playing
+                if (isEffectPlaying) {
+                    const currentTime = (Date.now() - playheadStartTime) / 1000;
+                    const playheadX = (currentTime / totalDuration) * width;
+                    
+                    // Debug info (remove this later)
+                    if (Math.floor(currentTime * 10) % 10 === 0) { // Log every 0.1 seconds
+                        console.log(`Time: ${currentTime.toFixed(2)}s, Total: ${totalDuration.toFixed(2)}s, X: ${playheadX.toFixed(0)}`);
+                    }
+                    
+                    // Always draw playhead, but limit position to canvas width
+                    const clampedX = Math.min(playheadX, width);
+                    
+                    ctx.strokeStyle = '#ff0000';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(clampedX, 0);
+                    ctx.lineTo(clampedX, height);
+                    ctx.stroke();
+                    
+                    // Draw playhead circle
+                    ctx.fillStyle = '#ff0000';
+                    ctx.beginPath();
+                    ctx.arc(clampedX, height / 2, 8, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    // Stop animation when we reach the end
+                    if (currentTime >= totalDuration) {
+                        isEffectPlaying = false;
+                        console.log('Effect finished!');
+                    }
+                }
+                
+                // Draw duration markers
+                ctx.strokeStyle = '#666';
+                ctx.lineWidth = 1;
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#666';
+                ctx.fillText('0s', 5, height - 5);
+                ctx.fillText(totalDuration.toFixed(2) + 's', width - 40, height - 5);
+            }
+            
+            // Continue animation
+            animationId = requestAnimationFrame(drawWaveform);
+        }
+        
+        // Wait for SFX to load, then setup controls
+        setTimeout(() => {
+            const playBtn = document.getElementById('play-btn');
+            const pitchSlider = document.getElementById('pitch-slider');
+            const pitchValue = document.getElementById('pitch-value');
+            const durSlider = document.getElementById('dur-slider');
+            const durValue = document.getElementById('dur-value');
+            const volSlider = document.getElementById('vol-slider');
+            const volValue = document.getElementById('vol-value');
+            const waveTabs = document.querySelectorAll('.wave-tab');
+            const beatTabs = document.querySelectorAll('.beat-tab');
+            const filterType = document.getElementById('filter-type');
+            const filterFreqSlider = document.getElementById('filter-freq-slider');
+            const filterFreqValue = document.getElementById('filter-freq-value');
+            const filterQSlider = document.getElementById('filter-q-slider');
+            const filterQValue = document.getElementById('filter-q-value');
+            const savePresetBtn = document.getElementById('save-preset');
+            const loadPresetBtn = document.getElementById('load-preset');
+            const resetPresetBtn = document.getElementById('reset-preset');
+            
+            // Start waveform animation
+            drawWaveform();
+            
+            // CORRECTED: Use window.audioParams
+            pitchSlider.addEventListener('input', (e) => {
+                const freq = parseInt(e.target.value);
+                pitchValue.textContent = freq;
+                if (window.audioParams) {
+                    window.audioParams.frequency = freq;
+                }
+            });
+            
+            durSlider.addEventListener('input', (e) => {
+                durValue.textContent = e.target.value;
+                if (window.audioParams) {
+                    window.audioParams.duration = parseFloat(e.target.value);
+                }
+            });
+            
+            volSlider.addEventListener('input', (e) => {
+                volValue.textContent = e.target.value;
+                if (window.audioParams) {
+                    window.audioParams.volume = parseInt(e.target.value) / 100;
+                }
+            });
+            
+            // Wave tab controls
+            waveTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    // Reset all tabs
+                    waveTabs.forEach(t => {
+                        t.style.background = '#333';
+                        t.style.color = 'white';
+                        t.style.border = '2px solid #333';
+                    });
+                    
+                    // Highlight selected tab
+                    e.target.style.background = '#00ff00';
+                    e.target.style.color = 'black';
+                    e.target.style.border = '2px solid #00ff00';
+                    
+                    // Update audio params
+                    if (window.audioParams) {
+                        window.audioParams.baseWave = e.target.dataset.wave;
+                    }
+                });
+            });
+            
+            // Beat pattern controls
+            beatTabs.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    // Reset all beat tabs
+                    beatTabs.forEach(t => {
+                        t.style.background = '#333';
+                        t.style.color = 'white';
+                        t.style.border = '2px solid #333';
+                    });
+                    
+                    // Highlight selected tab
+                    e.target.style.background = '#00ff00';
+                    e.target.style.color = 'black';
+                    e.target.style.border = '2px solid #00ff00';
+                    
+                    // Update audio params
+                    if (window.audioParams) {
+                        window.audioParams.beatCount = parseInt(e.target.dataset.beats);
+                    }
+                });
+            });
+            
+            filterType.addEventListener('change', (e) => {
+                if (window.audioParams) {
+                    window.audioParams.filterType = e.target.value;
+                }
+            });
+            
+            filterFreqSlider.addEventListener('input', (e) => {
+                filterFreqValue.textContent = e.target.value;
+                if (window.audioParams) {
+                    window.audioParams.filterFreq = parseInt(e.target.value);
+                }
+            });
+            
+            filterQSlider.addEventListener('input', (e) => {
+                filterQValue.textContent = e.target.value;
+                if (window.audioParams) {
+                    window.audioParams.filterQ = parseFloat(e.target.value);
+                }
+            });
+            
+            // Preset functionality
+            savePresetBtn.addEventListener('click', () => {
+                // Save current settings to localStorage
+                const currentSettings = {
+                    frequency: window.audioParams.frequency,
+                    duration: window.audioParams.duration,
+                    volume: window.audioParams.volume,
+                    baseWave: window.audioParams.baseWave,
+                    beatCount: window.audioParams.beatCount,
+                    filterType: window.audioParams.filterType,
+                    filterFreq: window.audioParams.filterFreq,
+                    filterQ: window.audioParams.filterQ
+                };
+                localStorage.setItem('sfxPreset', JSON.stringify(currentSettings));
+                console.log('💾 Preset saved!', currentSettings);
+                alert('Preset saved!');
+            });
+            
+            loadPresetBtn.addEventListener('click', () => {
+                // Load settings from localStorage
+                const savedSettings = localStorage.getItem('sfxPreset');
+                if (savedSettings) {
+                    const preset = JSON.parse(savedSettings);
+                    
+                    // Update audio params
+                    Object.assign(window.audioParams, preset);
+                    
+                    // Update UI elements
+                    pitchSlider.value = preset.frequency;
+                    pitchValue.textContent = preset.frequency;
+                    durSlider.value = preset.duration;
+                    durValue.textContent = preset.duration;
+                    volSlider.value = Math.round(preset.volume * 100);
+                    volValue.textContent = Math.round(preset.volume * 100);
+                    filterType.value = preset.filterType;
+                    filterFreqSlider.value = preset.filterFreq;
+                    filterFreqValue.textContent = preset.filterFreq;
+                    filterQSlider.value = preset.filterQ;
+                    filterQValue.textContent = preset.filterQ;
+                    
+                    // Update wave tabs
+                    waveTabs.forEach(tab => {
+                        if (tab.dataset.wave === preset.baseWave) {
+                            tab.style.background = '#00ff00';
+                            tab.style.color = 'black';
+                            tab.style.border = '2px solid #00ff00';
+                        } else {
+                            tab.style.background = '#333';
+                            tab.style.color = 'white';
+                            tab.style.border = '2px solid #333';
+                        }
+                    });
+                    
+                    // Update beat tabs
+                    beatTabs.forEach(tab => {
+                        if (parseInt(tab.dataset.beats) === preset.beatCount) {
+                            tab.style.background = '#00ff00';
+                            tab.style.color = 'black';
+                            tab.style.border = '2px solid #00ff00';
+                        } else {
+                            tab.style.background = '#333';
+                            tab.style.color = 'white';
+                            tab.style.border = '2px solid #333';
+                        }
+                    });
+                    
+                    console.log('📂 Preset loaded!', preset);
+                    alert('Preset loaded!');
+                } else {
+                    alert('No preset found! Save one first.');
+                }
+            });
+            
+            resetPresetBtn.addEventListener('click', () => {
+                // Reset to default settings
+                const defaults = {
+                    frequency: 800,
+                    duration: 0.1,
+                    volume: 0.4,
+                    baseWave: 'sine',
+                    beatCount: 1,
+                    filterType: 'highpass',
+                    filterFreq: 1000,
+                    filterQ: 10
+                };
+                
+                // Update audio params
+                Object.assign(window.audioParams, defaults);
+                
+                // Update UI elements
+                pitchSlider.value = defaults.frequency;
+                pitchValue.textContent = defaults.frequency;
+                durSlider.value = defaults.duration;
+                durValue.textContent = defaults.duration;
+                volSlider.value = Math.round(defaults.volume * 100);
+                volValue.textContent = Math.round(defaults.volume * 100);
+                filterType.value = defaults.filterType;
+                filterFreqSlider.value = defaults.filterFreq;
+                filterFreqValue.textContent = defaults.filterFreq;
+                filterQSlider.value = defaults.filterQ;
+                filterQValue.textContent = defaults.filterQ;
+                
+                // Reset wave tabs
+                waveTabs.forEach(tab => {
+                    if (tab.dataset.wave === defaults.baseWave) {
+                        tab.style.background = '#00ff00';
+                        tab.style.color = 'black';
+                        tab.style.border = '2px solid #00ff00';
+                    } else {
+                        tab.style.background = '#333';
+                        tab.style.color = 'white';
+                        tab.style.border = '2px solid #333';
+                    }
+                });
+                
+                // Reset beat tabs
+                beatTabs.forEach(tab => {
+                    if (parseInt(tab.dataset.beats) === defaults.beatCount) {
+                        tab.style.background = '#00ff00';
+                        tab.style.color = 'black';
+                        tab.style.border = '2px solid #00ff00';
+                    } else {
+                        tab.style.background = '#333';
+                        tab.style.color = 'white';
+                        tab.style.border = '2px solid #333';
+                    }
+                });
+                
+                console.log('🔄 Reset to defaults!');
+                alert('Reset to default settings!');
+            });
+            
+            playBtn.addEventListener('click', () => {
+                if (!isPlaying) {
+                    // START PLAYING
+                    isPlaying = true;
+                    playBtn.textContent = '⏸️ PAUSE';
+                    playBtn.style.background = '#ff4444';
+                    
+                    // Play immediately
+                    if (window.playWhoosh) {
+                        window.playWhoosh();
+                        // Start playhead animation
+                        playheadStartTime = Date.now();
+                        isEffectPlaying = true;
+                        console.log('✅ Whoosh sound started!');
+                    }
+                    
+                    // Set up loop (play every 0.5 seconds)
+                    loopInterval = setInterval(() => {
+                        if (window.playWhoosh) {
+                            window.playWhoosh();
+                            // Restart playhead animation for each loop
+                            playheadStartTime = Date.now();
+                            isEffectPlaying = true;
+                        }
+                    }, 500);
+                    
+                } else {
+                    // STOP PLAYING
+                    isPlaying = false;
+                    playBtn.textContent = '▶️ PLAY (Loop)';
+                    playBtn.style.background = '#00ff00';
+                    
+                    // Clear the loop
+                    if (loopInterval) {
+                        clearInterval(loopInterval);
+                        loopInterval = null;
+                    }
+                    
+                    console.log('⏹️ Whoosh sound stopped!');
+                }
+            });
+            
+            console.log('🎵 SFX test page ready! Use all the controls to shape your sound.');
+        }, 100);
+    </script>
+</body>
+</html>
