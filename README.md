@@ -2,9 +2,13 @@
 
 **Widgets for Maps** - A comprehensive collection of reusable mapping widgets for modern web applications.
 
-<img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget">
+<img src="public/cmps-wdgt.gif" width="100%" alt="WDGTS Compass Widget">
 
 *Compass WDGT in action*
+
+<img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget Demo">
+
+*Compass WDGT Demo*
 
 ## Overview
 
@@ -19,6 +23,7 @@ The system currently features a sophisticated **Compass Widget** with fighter je
 - **Real-time Coordinate Display**: Live latitude and longitude coordinates with fade-out animations
 - **Zoom Controls**: Integrated zoom level display with magnify icon
 - **Pitch Indicator**: Visual pitch angle display with progress bar
+- **Altitude Widget**: Real-time elevation display with mountain icon and dynamic fill bar (0m to 9400m range)
 - **Crosshair Targeting**: Centralized crosshair for precise location targeting
 - **Fighter Jet Aesthetic**: Professional HUD styling with cyan blue color scheme
 
