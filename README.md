@@ -8,7 +8,7 @@
 
 <img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget Demo">
 
-*Compass WDGT in actionm*
+*Compass WDGT in action*
 
 ## Overview
 

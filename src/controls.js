@@ -11,6 +11,8 @@ class MapControls {
     this.compassFadeTimer = null; // Add timer for compass ring fade-out
     this.altitudeFadeTimer = null; // Timer for altitude fade-out
     this.elevationDebounceTimer = null; // Timer for elevation API debouncing
+    this.scaleDebounceTimer = null; // Timer for scale updates
+    this.scaleFadeTimer = null; // Timer for scale fade-out
     this.terraDrawManager = null;
     this.loadControls();
   }
@@ -80,6 +82,7 @@ class MapControls {
       this.showCoordinates();
       this.updateDisplay();
       this.showAltitudeLevel();
+      this.showPitchDetailsLevel();
     });
     this.map.on('zoom', () => {
       // Track zoom direction for SFX with mechanical snap points
@@ -113,12 +116,14 @@ class MapControls {
       this.showCoordinates();
       this.showPitchLevel();
       this.showAltitudeLevel();
+      this.showPitchDetailsLevel();
       this.showCompassRing(); // Update compass ring 3D tilt on pitch changes
       this.updateDisplay();
     });
     this.map.on('rotate', () => {
       this.showCoordinates();
       this.showAltitudeLevel();
+      this.showPitchDetailsLevel();
       this.showCompassRing();
       this.updateDisplay();
     });
@@ -220,6 +225,11 @@ class MapControls {
     }, 100);
   }
 
+  // Show pitch details level - instant update like original pitch
+  showPitchDetailsLevel() {
+    this.updatePitchDetailsDisplay();
+  }
+
   // Actually update the altitude display (called after debounce)
   updateAltitudeDisplay() {
     const altitudePill = document.getElementById('altitude-pill');
@@ -256,6 +266,47 @@ class MapControls {
     });
   }
 
+  // Actually update the pitch details display - instant like original pitch
+  updatePitchDetailsDisplay() {
+    const pitchDetailsPill = document.getElementById('pitch-details-pill');
+    const pitchDetailsValue = document.getElementById('pitch-details-value');
+    const pitchDetailsLineFill = document.getElementById('pitch-details-line-fill');
+    const pitchDetailsContent = document.querySelector('.pitch-details-content'); // Get the content div
+    
+    // Get current pitch
+    const currentPitch = this.map.getPitch();
+    
+    // Format pitch display (e.g., "45.0°")
+    const pitchText = `${currentPitch.toFixed(1)}°`;
+    
+    // Update pitch details value
+    pitchDetailsValue.textContent = pitchText;
+    
+    // Calculate fill percentage (0° to 75° pitch range)
+    const minPitch = 0;
+    const maxPitch = 75;
+    const fillPercent = Math.max(0, Math.min(100, (currentPitch / maxPitch) * 100));
+    
+    pitchDetailsLineFill.style.height = fillPercent + '%';
+    
+    // Move the content (icon + text) to follow the fill position
+    const contentPosition = (fillPercent / 100) * 100; // Convert to pixels from bottom
+    pitchDetailsContent.style.bottom = contentPosition + 'px';
+    
+    // Show the pitch details pill immediately
+    pitchDetailsPill.style.opacity = '1';
+    
+    // Clear any existing timer
+    if (this.scaleFadeTimer) {
+      clearTimeout(this.scaleFadeTimer);
+    }
+    
+    // Set new timer to fade to subtle opacity after 1 second
+    this.scaleFadeTimer = setTimeout(() => {
+      pitchDetailsPill.style.opacity = '0.20';
+    }, 1000);
+  }
+
   // Get current altitude using MapTiler SDK
   async getCurrentAltitude() {
     const center = this.map.getCenter();
@@ -269,6 +320,21 @@ class MapControls {
       console.warn('Failed to fetch elevation:', error);
       return 0; // Default to sea level
     }
+  }
+
+  // Get current map scale
+  getCurrentScale() {
+    const zoom = this.map.getZoom();
+    const center = this.map.getCenter();
+    const lat = center.lat;
+    
+    // Calculate meters per pixel at current zoom/lat
+    const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
+    
+    // Convert to scale (1:X format)
+    const scale = Math.round(1 / (metersPerPixel / 1000)); // 1000mm = 1m
+    
+    return scale;
   }
 
   // Show compass ring with 3D rotation and fade-out timer
