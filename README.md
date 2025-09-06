@@ -2,6 +2,8 @@
 
 A sophisticated interactive mapping application featuring a fighter jet-style heads-up display (HUD) system with advanced navigation controls and real-time geospatial data visualization.
 
+![WDGTS Demo](public/demo.gif)
+
 ## Overview
 
 WDGTS is a modern web-based mapping application that combines MapTiler SDK with custom HUD elements to create an immersive navigation experience. The application features a centralized crosshair container with real-time coordinate display, zoom controls, pitch indicators, and a 3D compass ring with advanced visual effects.
