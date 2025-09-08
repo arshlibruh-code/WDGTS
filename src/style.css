@@ -129,7 +129,7 @@ body {
 /* Scale Pill - Below zoom pill in crosshair container */
 .scale-pill {
   position: absolute;
-  top: 72px; /* Below the zoom pill */
+  top: 84px; /* Below the zoom pill */
   left: 50%;
   transform: translateX(-50%);
   color: #00aaff;
@@ -150,14 +150,8 @@ body {
   height: 1px;
   background: #00aaff;
   transition: width 0.2s ease;
-}
-
-.imperial-line {
-  width: 60px;
-}
-
-.metric-line {
-  width: 60px;
+  min-width: 20px;
+  max-width: 200px;
 }
 
 #imperial-label, #metric-label {

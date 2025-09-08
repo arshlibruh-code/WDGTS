@@ -40,6 +40,13 @@ const sounds = {
     volume: 0.05
   },
   
+  move: {
+    type: 'sawtooth',
+    frequency: 5600,
+    duration: 0.02,
+    volume: 0.01
+  },
+  
   // Future sounds go here
   // hover: { type: 'sine', frequency: 800, duration: 0.05, volume: 0.1 },
   // select: { type: 'triangle', frequency: 1200, duration: 0.1, volume: 0.2 },

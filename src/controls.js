@@ -13,6 +13,7 @@ class MapControls {
     this.elevationDebounceTimer = null; // Timer for elevation API debouncing
     this.scaleDebounceTimer = null; // Timer for scale updates
     this.scaleFadeTimer = null; // Timer for scale fade-out
+    this.pitchFadeTimer = null; // Timer for pitch pill fade-out
     this.terraDrawManager = null;
     this.loadControls();
   }
@@ -80,10 +81,13 @@ class MapControls {
     // Update display when map moves - show coordinates on movement
     this.map.on('move', () => {
       this.showCoordinates();
-      this.showScaleLevel();
-      this.updateDisplay();
+      this.updateCoordinates();
       this.showAltitudeLevel();
-      this.showPitchDetailsLevel();
+      
+      // Play move sound if SFX is enabled
+      if (this.sfxEnabled && window.playSound) {
+        window.playSound('move');
+      }
     });
     this.map.on('zoom', () => {
       // Track zoom direction for SFX with mechanical snap points
@@ -112,22 +116,17 @@ class MapControls {
       this.showCoordinates();
       this.showZoomLevel();
       this.showScaleLevel();
-      this.updateDisplay();
+      this.updateCoordinates();
     });
     this.map.on('pitch', () => {
-      this.showCoordinates();
-      this.showScaleLevel();
-      this.showAltitudeLevel();
       this.showPitchDetailsLevel();
       this.showCompassRing(); // Update compass ring 3D tilt on pitch changes
-      this.updateDisplay();
+      this.updatePitch();
     });
     this.map.on('rotate', () => {
-      this.showCoordinates();
-      this.showAltitudeLevel();
       this.showPitchDetailsLevel();
       this.showCompassRing();
-      this.updateDisplay();
+      this.updateBearing();
     });
 
     // Right-click drag detection for pitch and bearing SFX
@@ -199,30 +198,30 @@ class MapControls {
       return;
     }
     
-    // Calculate distances for 60px line (same as CSS width)
-    const lineLengthPixels = 60;
-    const lineLengthMeters = lineLengthPixels * scaleData.metersPerPixel;
-    
-    // Format imperial (feet)
-    const feet = Math.round(lineLengthMeters * 3.28084);
-    let imperialText;
-    if (feet >= 5280) {
-      imperialText = Math.round(feet / 5280) + ' mi';
-    } else {
-      imperialText = feet + ' ft';
+    // Hide scale bar at very low zoom levels (below 4) - scale becomes meaningless
+    if (scaleData.zoom < 4) {
+      scalePill.style.opacity = '0';
+      return;
     }
     
-    // Format metric
-    let metricText;
-    if (lineLengthMeters >= 1000) {
-      metricText = (lineLengthMeters / 1000).toFixed(1) + ' km';
-    } else {
-      metricText = Math.round(lineLengthMeters) + ' m';
-    }
+    // Target line width for both lines
+    const targetLineWidth = 100; // Target line width in pixels
+    
+    // Select appropriate distance for imperial (independent selection)
+    const imperialDistance = this.selectNiceDistance(targetLineWidth, scaleData.metersPerPixel, 'imperial');
+    const imperialLineWidth = imperialDistance.meters / scaleData.metersPerPixel;
+    
+    // Select appropriate distance for metric (independent selection)
+    const metricDistance = this.selectNiceDistance(targetLineWidth, scaleData.metersPerPixel, 'metric');
+    const metricLineWidth = metricDistance.meters / scaleData.metersPerPixel;
+    
+    // Update line widths (clamp between 20-200px)
+    imperialLine.style.width = Math.max(20, Math.min(200, imperialLineWidth)) + 'px';
+    metricLine.style.width = Math.max(20, Math.min(200, metricLineWidth)) + 'px';
     
     // Update labels
-    imperialLabel.textContent = imperialText;
-    metricLabel.textContent = metricText;
+    imperialLabel.textContent = imperialDistance.label;
+    metricLabel.textContent = metricDistance.label;
     
     // Show the scale pill immediately
     scalePill.style.opacity = '1';
@@ -323,12 +322,12 @@ class MapControls {
     pitchDetailsPill.style.opacity = '1';
     
     // Clear any existing timer
-    if (this.scaleFadeTimer) {
-      clearTimeout(this.scaleFadeTimer);
+    if (this.pitchFadeTimer) {
+      clearTimeout(this.pitchFadeTimer);
     }
     
     // Set new timer to fade to subtle opacity after 1 second
-    this.scaleFadeTimer = setTimeout(() => {
+    this.pitchFadeTimer = setTimeout(() => {
       pitchDetailsPill.style.opacity = '0.20';
     }, 1000);
   }
@@ -367,6 +366,64 @@ class MapControls {
       console.error('Error getting scale data:', error);
       return null;
     }
+  }
+
+  // Select "nice" distance values for scale bar (independent for each unit system)
+  selectNiceDistance(targetPixels, metersPerPixel, unitSystem) {
+    const niceDistances = {
+      imperial: [
+        { meters: 1, label: '3 ft' },
+        { meters: 5, label: '16 ft' },
+        { meters: 10, label: '33 ft' },
+        { meters: 25, label: '82 ft' },
+        { meters: 50, label: '164 ft' },
+        { meters: 100, label: '328 ft' },
+        { meters: 250, label: '820 ft' },
+        { meters: 500, label: '1640 ft' },
+        { meters: 1000, label: '0.6 mi' },
+        { meters: 1609, label: '1 mi' },
+        { meters: 3219, label: '2 mi' },
+        { meters: 8047, label: '5 mi' },
+        { meters: 16093, label: '10 mi' },
+        { meters: 40234, label: '25 mi' },
+        { meters: 80467, label: '50 mi' },
+        { meters: 160934, label: '100 mi' }
+      ],
+      metric: [
+        { meters: 1, label: '1 m' },
+        { meters: 5, label: '5 m' },
+        { meters: 10, label: '10 m' },
+        { meters: 25, label: '25 m' },
+        { meters: 50, label: '50 m' },
+        { meters: 100, label: '100 m' },
+        { meters: 250, label: '250 m' },
+        { meters: 500, label: '500 m' },
+        { meters: 1000, label: '1 km' },
+        { meters: 2000, label: '2 km' },
+        { meters: 5000, label: '5 km' },
+        { meters: 10000, label: '10 km' },
+        { meters: 25000, label: '25 km' },
+        { meters: 50000, label: '50 km' },
+        { meters: 100000, label: '100 km' }
+      ]
+    };
+
+    const distances = niceDistances[unitSystem];
+    
+    // Find the distance that gives us the closest line width to target
+    let closest = distances[0];
+    let minDiff = Math.abs(targetPixels - (closest.meters / metersPerPixel));
+    
+    for (const distance of distances) {
+      const lineWidth = distance.meters / metersPerPixel;
+      const diff = Math.abs(targetPixels - lineWidth);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = distance;
+      }
+    }
+    
+    return closest;
   }
 
   // Show compass ring with 3D rotation and fade-out timer
@@ -495,6 +552,40 @@ class MapControls {
     // Update coordinates pill above crosshair
     document.getElementById('pill-lat').textContent = center.lat.toFixed(6);
     document.getElementById('pill-lng').textContent = center.lng.toFixed(6);
+  }
+
+  // Update only coordinates and zoom (for move/zoom events)
+  updateCoordinates() {
+    const center = this.map.getCenter();
+    const zoom = this.map.getZoom();
+    
+    // Update lat/lng/zoom sliders only
+    document.getElementById('lng').value = center.lng.toFixed(6);
+    document.getElementById('lat').value = center.lat.toFixed(6);
+    document.getElementById('zoom').value = zoom.toFixed(3);
+    
+    // Update slider values
+    document.getElementById('lng-val').textContent = center.lng.toFixed(6);
+    document.getElementById('lat-val').textContent = center.lat.toFixed(6);
+    document.getElementById('zoom-val').textContent = zoom.toFixed(3);
+    
+    // Update crosshair pill
+    document.getElementById('pill-lat').textContent = center.lat.toFixed(6);
+    document.getElementById('pill-lng').textContent = center.lng.toFixed(6);
+  }
+
+  // Update only pitch (for pitch events)
+  updatePitch() {
+    const pitch = this.map.getPitch();
+    document.getElementById('pitch').value = pitch.toFixed(3);
+    document.getElementById('pitch-val').textContent = pitch.toFixed(3);
+  }
+
+  // Update only bearing (for rotate events)
+  updateBearing() {
+    const bearing = this.map.getBearing();
+    document.getElementById('bearing').value = bearing.toFixed(3);
+    document.getElementById('bearing-val').textContent = bearing.toFixed(3);
   }
 
   reset() {
@@ -665,7 +756,8 @@ class MapControls {
       'Zoom In': true,
       'Zoom Out': true,
       'Pitch': true,
-      'Bearing': true
+      'Bearing': true,
+      'Map Move': true
     };
     
     // Track zoom for direction detection
