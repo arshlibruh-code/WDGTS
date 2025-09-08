@@ -1,7 +1,5 @@
 # WDGTS
 
-**Widgets for Maps** - A comprehensive collection of reusable mapping widgets for modern web applications.
-
 <img src="public/cmps-wdgt.gif" width="100%" alt="WDGTS Compass Widget">
 
 <img src="public/compass-street.gif" width="100%" alt="WDGTS Compass Widget Street">
@@ -141,8 +139,7 @@ Enhanced programmatic sound generation:
    - Create `src/config.js` with your API keys:
    ```javascript
    const config = {
-     MAPTILER_API_KEY: "your-maptiler-key",
-     PERPLEXITY_API_KEY: "your-perplexity-key"
+     MAPTILER_API_KEY: "your-maptiler-key"
    };
    ```
 
