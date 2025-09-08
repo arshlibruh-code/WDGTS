@@ -132,54 +132,9 @@ map.on('style.load', () => {
   console.log('✅ Map style loaded successfully');
 });
 
-// Load your preset when map is ready
-function loadPreset() {
-    // Your exact preset settings for map click
-    const clickPreset = {
-        "frequency": 278,
-        "duration": 0.1,
-        "volume": 0.2,
-        "baseWave": "sawtooth",
-        "beatCount": 1,
-        "filterType": "highpass",
-        "filterFreq": 3488,
-        "filterQ": 5.2
-    };
-    
-    // CLICKY MECHANICAL SOUND PRESETS
-    window.zoomInPreset = {
-        "frequency": 100,
-        "duration": 0.10,
-        "volume": 0.05,
-        "baseWave": "sawtooth",
-        "beatCount": 1,
-        "filterType": "highpass",
-        "filterFreq": 4000,
-        "filterQ": 2.1
-    };
-    
-    window.zoomOutPreset = {
-        "frequency": 100,
-        "duration": 0.10,
-        "volume": 0.05,
-        "baseWave": "sawtooth",
-        "beatCount": 1,
-        "filterType": "highpass",
-        "filterFreq": 5000,
-        "filterQ": 11.9
-    };
-    
-    // Apply click preset to audio params
-    if (window.audioParams) {
-        Object.assign(window.audioParams, clickPreset);
-        console.log('🎵 Click preset loaded:', clickPreset);
-        console.log('🔧 Zoom presets ready:', { zoomIn: window.zoomInPreset, zoomOut: window.zoomOutPreset });
-    }
-}
-
-// Load preset when map is ready
+// Map is ready - sounds are now handled by sounds.js
 map.on('load', () => {
-    loadPreset();
+    console.log('🗺️ Map loaded - sounds available via window.playSound()');
 });
 
 // Make map globally accessible for controls

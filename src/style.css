@@ -126,8 +126,8 @@ body {
 }
 
 
-/* Pitch Pill - Below zoom pill in crosshair container */
-.pitch-pill {
+/* Scale Pill - Below zoom pill in crosshair container */
+.scale-pill {
   position: absolute;
   top: 72px; /* Below the zoom pill */
   left: 50%;
@@ -136,35 +136,32 @@ body {
   font-family: monospace;
   font-size: 8px;
   pointer-events: none;
-  backdrop-filter: blur(5px);
   transition: opacity 0.1s linear;
   white-space: nowrap;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 4px;
+  gap: 2px;
   opacity: 0.20; /* Start dimmed like other pills */
 }
 
-.pitch-pill #pitch-value {
-  font-size: 8px;
-}
-
-.pitch-progress {
-  width: 34px;
+.scale-line {
   height: 1px;
-  background: rgba(0, 170, 255, 0.2);
-  border-radius: 2px;
-  overflow: hidden;
+  background: #00aaff;
+  transition: width 0.2s ease;
 }
 
-.pitch-progress-fill {
-  height: 100%;
-  background: #00aaff;
-  border-radius: 2px;
-  transition: width 0.3s ease;
-  width: 0%;
+.imperial-line {
+  width: 60px;
+}
+
+.metric-line {
+  width: 60px;
+}
+
+#imperial-label, #metric-label {
+  font-size: 8px;
 }
 
 .pitch-range {
@@ -378,16 +375,16 @@ body {
 /* Terra Draw Custom Toolbar Styling */
 .terradraw-toolbar {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.85);
-  border-radius: 12px;
-  padding: 8px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  bottom: -1px;
+  padding: 10px 0px;
+  left: -1px;
   display: flex;
   gap: 8px;
   z-index: 1000;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(0, 170, 255, 0.3);
+  backdrop-filter: blur(30px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
@@ -416,11 +413,10 @@ body {
 
 .toolbar-btn {
   background: transparent;
-  border: 1px solid #00aaff;
-  color: #00aaff;
+  border: 1px solid #fff;
+  color: #ffffff;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -434,12 +430,10 @@ body {
   background: rgba(0, 170, 255, 0.1);
   border-color: #00aaff;
   color: #00aaff;
-  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 170, 255, 0.3);
 }
 
 .toolbar-btn:active {
-  transform: translateY(0);
   box-shadow: 0 1px 4px rgba(0, 170, 255, 0.2);
 }
 
@@ -479,7 +473,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #00aaff;
+  color: #ffffff;
   font-size: 12px;
   font-weight: 500;
 }
@@ -506,7 +500,7 @@ body {
   align-items: center;
   gap: 8px;
   z-index: 1001;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(30px);
   border: 1px solid rgba(0, 170, 255, 0.3);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   animation: slideInDown 0.3s ease;

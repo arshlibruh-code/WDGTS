@@ -80,6 +80,7 @@ class MapControls {
     // Update display when map moves - show coordinates on movement
     this.map.on('move', () => {
       this.showCoordinates();
+      this.showScaleLevel();
       this.updateDisplay();
       this.showAltitudeLevel();
       this.showPitchDetailsLevel();
@@ -110,11 +111,12 @@ class MapControls {
       // existing behavior
       this.showCoordinates();
       this.showZoomLevel();
+      this.showScaleLevel();
       this.updateDisplay();
     });
     this.map.on('pitch', () => {
       this.showCoordinates();
-      this.showPitchLevel();
+      this.showScaleLevel();
       this.showAltitudeLevel();
       this.showPitchDetailsLevel();
       this.showCompassRing(); // Update compass ring 3D tilt on pitch changes
@@ -181,34 +183,58 @@ class MapControls {
     }, 1000);
   }
 
-  // Show pitch level with fade-out timer
-  showPitchLevel() {
-    const pitchPill = document.getElementById('pitch-pill');
-    const pitchValue = document.getElementById('pitch-value');
+  // Show scale level with fade-out timer using MapTiler's scale calculation
+  showScaleLevel() {
+    const scalePill = document.getElementById('scale-pill');
+    const imperialLabel = document.getElementById('imperial-label');
+    const metricLabel = document.getElementById('metric-label');
+    const imperialLine = document.getElementById('imperial-line');
+    const metricLine = document.getElementById('metric-line');
     
-    // Update pitch value
-    const currentPitch = this.map.getPitch();
-    pitchValue.textContent = currentPitch.toFixed(1) + '°';
+    // Get the current scale data using MapTiler's calculation
+    const scaleData = this.getMapTilerScaleData();
     
-    // Update pitch progress bar
-    const pitchBarFill = document.getElementById('pitch-bar-fill');
-    if (pitchBarFill) {
-      const maxPitch = this.map.getMaxPitch();
-      const pitchPercent = (currentPitch / maxPitch) * 100;
-      pitchBarFill.style.width = pitchPercent + '%';
+    if (!scaleData) {
+      console.warn('Could not get scale data');
+      return;
     }
     
-    // Show the pitch pill immediately
-    pitchPill.style.opacity = '1';
+    // Calculate distances for 60px line (same as CSS width)
+    const lineLengthPixels = 60;
+    const lineLengthMeters = lineLengthPixels * scaleData.metersPerPixel;
+    
+    // Format imperial (feet)
+    const feet = Math.round(lineLengthMeters * 3.28084);
+    let imperialText;
+    if (feet >= 5280) {
+      imperialText = Math.round(feet / 5280) + ' mi';
+    } else {
+      imperialText = feet + ' ft';
+    }
+    
+    // Format metric
+    let metricText;
+    if (lineLengthMeters >= 1000) {
+      metricText = (lineLengthMeters / 1000).toFixed(1) + ' km';
+    } else {
+      metricText = Math.round(lineLengthMeters) + ' m';
+    }
+    
+    // Update labels
+    imperialLabel.textContent = imperialText;
+    metricLabel.textContent = metricText;
+    
+    // Show the scale pill immediately
+    scalePill.style.opacity = '1';
     
     // Clear any existing timer
-    if (this.pitchFadeTimer) {
-      clearTimeout(this.pitchFadeTimer);
+    if (this.scaleFadeTimer) {
+      clearTimeout(this.scaleFadeTimer);
     }
     
     // Set new timer to fade to subtle opacity after 1 second
-    this.pitchFadeTimer = setTimeout(() => {
-      pitchPill.style.opacity = '0.20';
+    this.scaleFadeTimer = setTimeout(() => {
+      scalePill.style.opacity = '0.20';
     }, 1000);
   }
 
@@ -322,19 +348,25 @@ class MapControls {
     }
   }
 
-  // Get current map scale
-  getCurrentScale() {
-    const zoom = this.map.getZoom();
-    const center = this.map.getCenter();
-    const lat = center.lat;
-    
-    // Calculate meters per pixel at current zoom/lat
-    const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
-    
-    // Convert to scale (1:X format)
-    const scale = Math.round(1 / (metersPerPixel / 1000)); // 1000mm = 1m
-    
-    return scale;
+  // Get MapTiler's built-in scale data
+  getMapTilerScaleData() {
+    try {
+      const zoom = this.map.getZoom();
+      const center = this.map.getCenter();
+      const lat = center.lat;
+      
+      // Use MapTiler's built-in calculation (same as MapLibre GL JS)
+      const metersPerPixel = 156543.03392 * Math.cos(lat * Math.PI / 180) / Math.pow(2, zoom);
+      
+      return {
+        metersPerPixel: metersPerPixel,
+        zoom: zoom,
+        latitude: lat
+      };
+    } catch (error) {
+      console.error('Error getting scale data:', error);
+      return null;
+    }
   }
 
   // Show compass ring with 3D rotation and fade-out timer
@@ -631,7 +663,9 @@ class MapControls {
     this.sfxEvents = {
       'Map Click': true,
       'Zoom In': true,
-      'Zoom Out': true
+      'Zoom Out': true,
+      'Pitch': true,
+      'Bearing': true
     };
     
     // Track zoom for direction detection
@@ -677,43 +711,30 @@ class MapControls {
   }
   
   playZoomSound(direction) {
-    if (!this.sfxEnabled || !window.playWhoosh) return;
+    if (!this.sfxEnabled || !window.playSound) return;
     
-    // Get the appropriate preset
-    const preset = direction === 'in' ? window.zoomInPreset : window.zoomOutPreset;
-    
-    if (preset) {
-      // Temporarily apply zoom preset
-      const originalParams = { ...window.audioParams };
-      Object.assign(window.audioParams, preset);
-      
-      // Play the sound
-      window.playWhoosh();
-      console.log(`🔊 Zoom ${direction} sound played!`);
-      
-      // Restore original params
-      Object.assign(window.audioParams, originalParams);
-    }
+    // Simple sound call - no more complex preset juggling!
+    const soundName = direction === 'in' ? 'zoomIn' : 'zoomOut';
+    window.playSound(soundName);
   }
   
   updateMapClickSound() {
     // Remove ALL existing click listeners
     this.map.off('click');
     
-    // Add click listener only if SFX is enabled and playWhoosh is available
-    if (this.sfxEnabled && window.playWhoosh) {
+    // Add click listener only if SFX is enabled and playSound is available
+    if (this.sfxEnabled && window.playSound) {
       this.map.on('click', (e) => {
         // Only play if SFX is still enabled (double check)
-        if (this.sfxEnabled && window.playWhoosh) {
-          window.playWhoosh();
-          console.log('🔊 Map click sound played!');
+        if (this.sfxEnabled && window.playSound) {
+          window.playSound('click');
         }
       });
       console.log('🎵 Map click sound ENABLED');
     } else if (!this.sfxEnabled) {
       console.log('🔇 Map click sound DISABLED');
-    } else if (!window.playWhoosh) {
-      console.log('⚠️ SFX not ready yet, retrying...');
+    } else if (!window.playSound) {
+      console.log('⚠️ Sounds not ready yet, retrying...');
       // Retry after a short delay
       setTimeout(() => this.updateMapClickSound(), 500);
     }
@@ -754,7 +775,7 @@ class MapControls {
         const pitchChange = Math.abs(currentPitch - lastPitch);
         
         if (pitchChange >= pitchThreshold) {
-          this.playZoomSound('in'); // Use zoom-in SFX for pitch
+          window.playSound('pitch'); // Dedicated pitch sound
           console.log('🔊 Pitch sound played!');
           lastPitch = currentPitch;
         }
@@ -768,7 +789,7 @@ class MapControls {
         const bearingChange = Math.abs(currentBearing - lastBearing);
         
         if (bearingChange >= bearingThreshold) {
-          this.playZoomSound('in'); // Use zoom-in SFX for bearing
+          window.playSound('bearing'); // Dedicated bearing sound
           console.log('🔊 Bearing sound played!');
           lastBearing = currentBearing;
         }

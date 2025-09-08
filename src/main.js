@@ -1,7 +1,7 @@
 import './style.css'
 import './config.js'
 import './map.js'
-import './sfx.js'
+import './sounds.js'
 import MapControls from './controls.js'
 
 // Initialize controls after map is loaded

@@ -95,11 +95,16 @@
             <button id="save-preset" style="padding: 10px 15px; border: 2px solid #00ff00; background: #00ff00; color: black; cursor: pointer; border-radius: 5px;">Save Current</button>
             <button id="load-preset" style="padding: 10px 15px; border: 2px solid #ff6b6b; background: #ff6b6b; color: white; cursor: pointer; border-radius: 5px;">Load Preset</button>
             <button id="reset-preset" style="padding: 10px 15px; border: 2px solid #666; background: #666; color: white; cursor: pointer; border-radius: 5px;">Reset</button>
+            <button id="beep-preset" style="padding: 10px 15px; border: 2px solid #ffaa00; background: #ffaa00; color: black; cursor: pointer; border-radius: 5px;">🔊 Beep Preset</button>
         </div>
     </div>
     
     <button id="play-btn" style="padding: 20px; font-size: 20px; background: #00ff00; color: black; border: none; cursor: pointer;">
         ▶️ PLAY (Loop)
+    </button>
+    
+    <button id="beep-btn" style="padding: 15px; font-size: 16px; background: #ff6b6b; color: white; border: none; cursor: pointer; margin-left: 10px;">
+        🔊 BEEP TEST
     </button>
     
     <!-- Waveform Visualization -->
@@ -256,6 +261,7 @@
         // Wait for SFX to load, then setup controls
         setTimeout(() => {
             const playBtn = document.getElementById('play-btn');
+            const beepBtn = document.getElementById('beep-btn');
             const pitchSlider = document.getElementById('pitch-slider');
             const pitchValue = document.getElementById('pitch-value');
             const durSlider = document.getElementById('dur-slider');
@@ -272,6 +278,7 @@
             const savePresetBtn = document.getElementById('save-preset');
             const loadPresetBtn = document.getElementById('load-preset');
             const resetPresetBtn = document.getElementById('reset-preset');
+            const beepPresetBtn = document.getElementById('beep-preset');
             
             // Start waveform animation
             drawWaveform();
@@ -534,6 +541,14 @@
                     }
                     
                     console.log('⏹️ Whoosh sound stopped!');
+                }
+            });
+            
+            // Beep button event listener
+            beepBtn.addEventListener('click', () => {
+                if (window.createBeep) {
+                    window.createBeep();
+                    console.log('🔊 Beep played!');
                 }
             });
             
