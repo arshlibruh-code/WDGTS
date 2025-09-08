@@ -113,7 +113,6 @@ class MapControls {
       this.previousZoom = currentZoom;
       
       // existing behavior
-      this.showCoordinates();
       this.showZoomLevel();
       this.showScaleLevel();
       this.updateCoordinates();
@@ -797,7 +796,7 @@ class MapControls {
     Object.entries(this.sfxEvents).forEach(([event, enabled]) => {
       const eventDiv = document.createElement('div');
       eventDiv.className = 'sfx-event';
-      eventDiv.innerHTML = `${event}: <span class="sfx-status ${enabled && this.sfxEnabled ? '' : 'muted'}">${enabled && this.sfxEnabled ? '🔊 Active' : '🔇 Muted'}</span>`;
+      eventDiv.innerHTML = `${event}: <span class="sfx-status ${enabled && this.sfxEnabled ? '' : 'muted'}">${enabled && this.sfxEnabled ? 'Active' : 'Muted'}</span>`;
       sfxEvents.appendChild(eventDiv);
     });
   }
@@ -822,11 +821,11 @@ class MapControls {
           window.playSound('click');
         }
       });
-      console.log('🎵 Map click sound ENABLED');
+      console.log('Map click sound ENABLED');
     } else if (!this.sfxEnabled) {
-      console.log('🔇 Map click sound DISABLED');
+      console.log('Map click sound DISABLED');
     } else if (!window.playSound) {
-      console.log('⚠️ Sounds not ready yet, retrying...');
+      console.log('Sounds not ready yet, retrying...');
       // Retry after a short delay
       setTimeout(() => this.updateMapClickSound(), 500);
     }
@@ -868,7 +867,7 @@ class MapControls {
         
         if (pitchChange >= pitchThreshold) {
           window.playSound('pitch'); // Dedicated pitch sound
-          console.log('🔊 Pitch sound played!');
+          console.log('Pitch sound played!');
           lastPitch = currentPitch;
         }
       }
@@ -882,7 +881,7 @@ class MapControls {
         
         if (bearingChange >= bearingThreshold) {
           window.playSound('bearing'); // Dedicated bearing sound
-          console.log('🔊 Bearing sound played!');
+          console.log('Bearing sound played!');
           lastBearing = currentBearing;
         }
       }

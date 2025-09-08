@@ -1,53 +1,49 @@
 <!-- Controls -->
 <div id="controls" class="controls-panel">
-  <div class="controls-header">
-    <div>🎯 Map Controls</div>
-  </div>
-
   <div class="controls-group">
-    <div>LONGITUDE: <span id="lng-val">0</span></div>
+    <div>LONGITUDE <span id="lng-val">0</span></div>
     <input type="range" id="lng" min="-180" max="180" step="0.000001" class="controls-slider">
   </div>
   
   <div class="controls-group">
-    <div>LATITUDE: <span id="lat-val">0</span></div>
+    <div>LATITUDE <span id="lat-val">0</span></div>
     <input type="range" id="lat" min="-90" max="90" step="0.000001" class="controls-slider">
   </div>
 
   <div class="controls-group">
-    <div>Zoom: <span id="zoom-val">3</span></div>
+    <div>ZOOM <span id="zoom-val">3</span></div>
     <input type="range" id="zoom" min="0" max="20" step="0.001" class="controls-slider">
   </div>
 
   <div class="controls-group">
-    <div>Pitch: <span id="pitch-val">0</span>°</div>
+    <div>PITCH <span id="pitch-val">0</span>°</div>
     <input type="range" id="pitch" min="0" max="85" step="0.001" class="controls-slider">
   </div>
 
   <div class="controls-group">
-    <div>Bearing: <span id="bearing-val">0</span>°</div>
+    <div>BEARING <span id="bearing-val">0</span>°</div>
     <input type="range" id="bearing" min="0" max="360" step="0.001" class="controls-slider">
   </div>
 
   <!-- SFX Panel -->
   <div class="controls-group sfx-panel">
     <div class="sfx-header">
-      <div>🎵 SFX Controls</div>
+      <div>SFX Controls</div>
       <button id="sfx-toggle" class="sfx-toggle-btn">ON</button>
     </div>
     <div id="sfx-events" class="sfx-events">
-      <div class="sfx-event">Map Click: <span class="sfx-status">🔊 Active</span></div>
-      <div class="sfx-event">Zoom In: <span class="sfx-status">🔊 Active</span></div>
-      <div class="sfx-event">Zoom Out: <span class="sfx-status">🔊 Active</span></div>
-      <div class="sfx-event">Pitch: <span class="sfx-status">🔊 Active</span></div>
-      <div class="sfx-event">Bearing: <span class="sfx-status">🔊 Active</span></div>
+      <div class="sfx-event">Map Click: <span class="sfx-status">Active</span></div>
+      <div class="sfx-event">Zoom In: <span class="sfx-status">Active</span></div>
+      <div class="sfx-event">Zoom Out: <span class="sfx-status">Active</span></div>
+      <div class="sfx-event">Pitch: <span class="sfx-status">Active</span></div>
+      <div class="sfx-event">Bearing: <span class="sfx-status">Active</span></div>
     </div>
   </div>
 
   <div class="controls-group">
     <select id="style" class="controls-select">
-      <option value="ESRI_SATELLITE" selected>🛰️ Esri Satellite</option>
-      <option value="OSM">🗺️ OpenStreetMap</option>
+      <option value="ESRI_SATELLITE" selected>Esri Satellite</option>
+      <option value="OSM">OpenStreetMap</option>
       <option value="OFM_FIORD">OFM Fiord</option>
       <option value="OFM_LIBERTY">OFM Liberty</option>
       <option value="OFM_BRIGHT">OFM Bright</option>

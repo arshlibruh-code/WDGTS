@@ -8,7 +8,7 @@
 
 <img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget Demo">
 
-**[Compass WDGT in action - featuring the latest dual scale bar system and enhanced audio feedback](public/compass-wdgt.mp4)**
+**[Compass WDGT in action](public/compass-wdgt.mp4)**
 
 ## Overview
 

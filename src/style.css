@@ -13,30 +13,63 @@ body {
 /* Controls Panel */
 .controls-panel {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  background: #323232;
+  top: 0px;
+  left: 0px;
+  backdrop-filter: blur(10px);
   color: white;
-  padding: 15px;
-  border: 2px solid white;
+  padding: 10px;
   font-family: monospace;
-  font-size: 12px;
+  font-size: 10px;
   z-index: 1000;
-  width: 200px;
-}
-
-.controls-header {
-  margin-bottom: 10px;
-  text-align: center;
-  color: #00ff00;
+  width: 180px;
 }
 
 .controls-group {
   margin-bottom: 10px;
+  
 }
 
 .controls-slider {
   width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgb(213, 213, 213, 0.1);
+  cursor: pointer;
+  height: 1px;
+}
+
+.controls-slider::-webkit-slider-track {
+  background: #333;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.controls-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #00aaff;
+  height: 12px;
+  width: 6px;
+  cursor: pointer;
+  border: 1px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.controls-slider::-moz-range-track {
+  background: #333;
+  height: 6px;
+  border-radius: 3px;
+  border: none;
+}
+
+.controls-slider::-moz-range-thumb {
+  background: #00aaff;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .controls-select {
@@ -49,8 +82,8 @@ body {
 
 .controls-button {
   width: 100%;
-  padding: 8px;
-  background: #ff4444;
+  padding: 2px;
+  background: transparent;
   color: white;
   border: none;
   cursor: pointer;
@@ -606,10 +639,8 @@ body {
 
 /* SFX Panel Styles */
 .sfx-panel {
-  border: 2px solid #00ff00;
-  border-radius: 5px;
-  padding: 10px;
-  margin-top: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .sfx-header {

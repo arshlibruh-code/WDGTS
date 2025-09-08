@@ -57,7 +57,7 @@ const sounds = {
 function playSound(soundName) {
   const sound = sounds[soundName];
   if (!sound) {
-    console.warn(`🔇 Sound "${soundName}" not found. Available sounds:`, Object.keys(sounds));
+    console.warn(`Sound "${soundName}" not found. Available sounds:`, Object.keys(sounds));
     return;
   }
   
@@ -76,7 +76,7 @@ function playSound(soundName) {
   oscillator.start(now);
   oscillator.stop(now + sound.duration);
   
-  console.log(`🔊 Played: ${soundName}`);
+  console.log(`Played: ${soundName}`);
 }
 
 // Make it globally available
