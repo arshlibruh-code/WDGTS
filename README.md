@@ -139,8 +139,7 @@ Enhanced programmatic sound generation:
    - Create `src/config.js` with your API keys:
    ```javascript
    const config = {
-     MAPTILER_API_KEY: "your-maptiler-key",
-     PERPLEXITY_API_KEY: "your-perplexity-key"
+     MAPTILER_API_KEY: "your-maptiler-key"
    };
    ```
 
