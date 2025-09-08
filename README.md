@@ -8,12 +8,7 @@
 
 <img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget Demo">
 
-<video width="100%" controls>
-  <source src="public/compass-wdgt.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-
-*Compass WDGT in action - featuring the latest dual scale bar system and enhanced audio feedback*
+**[Compass WDGT in action - featuring the latest dual scale bar system and enhanced audio feedback](public/compass-wdgt.mp4)**
 
 ## Overview
 
