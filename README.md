@@ -8,7 +8,12 @@
 
 <img src="public/demo.gif" width="100%" alt="WDGTS Compass Widget Demo">
 
-*Compass WDGT in action*
+<video width="100%" controls>
+  <source src="public/compass-wdgt.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+*Compass WDGT in action - featuring the latest dual scale bar system and enhanced audio feedback*
 
 ## Overview
 
@@ -20,6 +25,7 @@ The system currently features a sophisticated **Compass Widget** with fighter je
 
 ### Compass Widget
 - **3D Compass Ring**: Advanced compass with custom dash patterns and 3D rotation effects
+- **Dual Scale Bar System**: Independent imperial and metric lines with smart distance selection and dynamic widths
 - **Real-time Coordinate Display**: Live latitude and longitude coordinates with fade-out animations
 - **Zoom Controls**: Integrated zoom level display with magnify icon
 - **Pitch Indicator**: Visual pitch angle display with progress bar
@@ -35,9 +41,10 @@ The system currently features a sophisticated **Compass Widget** with fighter je
 
 ### Audio Widget
 - **Programmatic Sound Effects**: Custom audio generation using Web Audio API
-- **Interactive Feedback**: Sound effects for map clicks and zoom operations
+- **Complete Interaction Feedback**: Sound effects for map clicks, zoom operations, panning, pitch, and bearing changes
 - **Configurable Audio**: Adjustable frequency, duration, volume, and filter parameters
-- **Mechanical Sound Design**: Realistic mechanical feedback for navigation actions
+- **Mechanical Sound Design**: Realistic mechanical feedback for all navigation actions
+- **Smart Audio System**: Context-aware sound triggering with SFX toggle controls
 
 ## Widget System Features
 
@@ -56,7 +63,6 @@ The system currently features a sophisticated **Compass Widget** with fighter je
 ## Roadmap
 
 ### Planned Widgets
-- **Scale Widget**: Dynamic scale bar with unit conversion
 - **Layer Control Widget**: Toggle and manage map layers
 - **Search Widget**: Geocoding and location search functionality
 - **Measurement Widget**: Distance and area calculation tools
@@ -87,7 +93,7 @@ src/
 ├── map.js           # Map configuration and initialization
 ├── controls.js      # Main control system and HUD management
 ├── terradraw.js     # Drawing system integration
-├── sfx.js           # Sound effects system
+├── sounds.js        # Enhanced sound effects system
 ├── config.js        # API key configuration (gitignored)
 ├── style.css        # Application styling
 └── controls.html    # UI component templates
@@ -110,11 +116,12 @@ Drawing system integration:
 - Interactive toolbar integration
 
 #### Audio System
-Programmatic sound generation:
-- Custom oscillator-based audio
-- Configurable filter chains
-- Real-time parameter adjustment
-- Mechanical feedback simulation
+Enhanced programmatic sound generation:
+- Custom oscillator-based audio with Web Audio API
+- Complete interaction feedback (click, zoom, move, pitch, bearing)
+- Configurable sound parameters and SFX toggle controls
+- Real-time parameter adjustment and mechanical feedback simulation
+- Smart audio system with context-aware sound triggering
 
 ## Installation
 
@@ -191,11 +198,11 @@ The application supports multiple map styles:
 - OpenFreeMap styles (Liberty, Bright, Positron, Fiord)
 
 ### Audio Parameters
-Customizable audio settings in `sfx.js`:
-- Frequency range and modulation
+Customizable audio settings in `sounds.js`:
+- Frequency range and modulation for all interaction types
 - Duration and envelope shaping
-- Filter types and resonance
-- Volume and attack/release curves
+- Volume levels and sound type selection (sine, square, sawtooth, triangle)
+- Complete sound library with click, zoom, move, pitch, and bearing sounds
 
 ## Development
 
