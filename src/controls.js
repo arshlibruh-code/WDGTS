@@ -15,6 +15,7 @@ class MapControls {
     this.scaleFadeTimer = null; // Timer for scale fade-out
     this.pitchFadeTimer = null; // Timer for pitch pill fade-out
     this.terraDrawManager = null;
+    this.uiVisible = false; // Track UI visibility state (start hidden)
     this.loadControls();
   }
 
@@ -24,6 +25,15 @@ class MapControls {
       const html = await response.text();
       document.body.insertAdjacentHTML('beforeend', html);
       
+      // Hide UI elements IMMEDIATELY after insertion (before they render)
+      const controlsPanel = document.getElementById('controls');
+      const terraDrawToolbar = document.getElementById('terradraw-toolbar');
+      if (controlsPanel) controlsPanel.style.display = 'none';
+      if (terraDrawToolbar) terraDrawToolbar.style.display = 'none';
+      
+      // Set up observer to hide MapLibre controls as soon as they appear
+      this.setupMapLibreControlsObserver();
+      
       // Wait for DOM to be ready, then setup events
       setTimeout(() => {
         this.setupEvents();
@@ -31,6 +41,18 @@ class MapControls {
         this.initTerraDraw();
         this.setupTerraDrawToolbar();
         this.initSFXPanel();
+        this.setupUIToggle();
+        // Ensure UI is hidden (in case anything slipped through)
+        this.hideUI();
+        
+        // Also hide UI when map loads (in case controls are added later)
+        this.map.on('load', () => {
+          setTimeout(() => {
+            if (!this.uiVisible) {
+              this.hideUI();
+            }
+          }, 50);
+        });
       }, 50);
     } catch (error) {
       console.error('Failed to load controls:', error);
@@ -886,6 +908,123 @@ class MapControls {
         }
       }
     });
+  }
+
+  // UI Toggle functionality (CMD+. to hide/show UI)
+  setupUIToggle() {
+    document.addEventListener('keydown', (e) => {
+      // CMD+. on Mac, Ctrl+. on Windows/Linux
+      if ((e.metaKey || e.ctrlKey) && e.key === '.') {
+        e.preventDefault();
+        this.toggleUI();
+      }
+    });
+  }
+
+  // Set up MutationObserver to hide MapLibre controls as soon as they appear
+  setupMapLibreControlsObserver() {
+    // Hide any existing MapLibre controls immediately
+    const existingControls = this.getMapLibreControls();
+    existingControls.forEach(ctrl => {
+      if (!this.uiVisible) {
+        ctrl.style.display = 'none';
+      }
+    });
+
+    // Watch for new MapLibre controls being added to the DOM
+    const observer = new MutationObserver((mutations) => {
+      if (!this.uiVisible) {
+        const newControls = this.getMapLibreControls();
+        newControls.forEach(ctrl => {
+          ctrl.style.display = 'none';
+        });
+      }
+    });
+
+    // Observe the map container and document body for new elements
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+      observer.observe(mapContainer, {
+        childList: true,
+        subtree: true
+      });
+    }
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    // Store observer for cleanup if needed
+    this.mapLibreObserver = observer;
+  }
+
+  // Get all MapLibre/MapTiler control elements
+  getMapLibreControls() {
+    // Try multiple selectors to catch all MapLibre/MapTiler controls
+    const selectors = [
+      '.maptiler-control',
+      '.maplibregl-ctrl-group',
+      '.maplibregl-ctrl',
+      '.maplibregl-ctrl-top-right',
+      '.maplibregl-ctrl-bottom-right',
+      '.maplibregl-ctrl-top-left',
+      '.maplibregl-ctrl-bottom-left',
+      '[class*="maplibregl-ctrl"]',
+      '[class*="maptiler-control"]'
+    ];
+    
+    let allControls = [];
+    selectors.forEach(selector => {
+      const controls = document.querySelectorAll(selector);
+      allControls = allControls.concat(Array.from(controls));
+    });
+    
+    // Remove duplicates
+    return Array.from(new Set(allControls));
+  }
+
+  hideUI() {
+    this.uiVisible = false;
+    
+    // Get UI elements
+    const controlsPanel = document.getElementById('controls');
+    const terraDrawToolbar = document.getElementById('terradraw-toolbar');
+    const maptilerControls = this.getMapLibreControls();
+    
+    // Hide UI elements (inline style overrides CSS)
+    if (controlsPanel) controlsPanel.style.display = 'none';
+    if (terraDrawToolbar) terraDrawToolbar.style.display = 'none';
+    maptilerControls.forEach(ctrl => {
+      ctrl.style.display = 'none';
+    });
+    console.log('UI hidden');
+  }
+
+  showUI() {
+    this.uiVisible = true;
+    
+    // Get UI elements
+    const controlsPanel = document.getElementById('controls');
+    const terraDrawToolbar = document.getElementById('terradraw-toolbar');
+    const maptilerControls = this.getMapLibreControls();
+    
+    // Show UI elements (set specific display values to override CSS)
+    if (controlsPanel) controlsPanel.style.display = 'block';
+    if (terraDrawToolbar) terraDrawToolbar.style.display = 'flex';
+    maptilerControls.forEach(ctrl => {
+      // Set display to block to override CSS display: none
+      // MapLibre controls typically use block or flex, block works for most
+      ctrl.style.display = 'block';
+    });
+    console.log('UI shown');
+  }
+
+  toggleUI() {
+    if (this.uiVisible) {
+      this.hideUI();
+    } else {
+      this.showUI();
+    }
   }
 }
 

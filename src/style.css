@@ -685,3 +685,30 @@ body {
 .sfx-status.muted {
   color: #666;
 }
+
+/* Hide MapLibre/MapTiler controls by default (will be toggled by JavaScript) */
+.maptiler-control,
+.maplibregl-ctrl-group,
+.maplibregl-ctrl,
+.maplibregl-ctrl-top-right,
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-top-left,
+.maplibregl-ctrl-bottom-left,
+[class*="maplibregl-ctrl"],
+[class*="maptiler-control"] {
+  display: none;
+}
+
+/* Always hide map attribution */
+.maplibregl-ctrl-attrib,
+.maptiler-ctrl-attrib,
+[class*="attrib"],
+[class*="Attribution"] {
+  display: none !important;
+}
+
+/* Controls panel and TerraDraw toolbar hidden by default */
+.controls-panel,
+.terradraw-toolbar {
+  display: none;
+}

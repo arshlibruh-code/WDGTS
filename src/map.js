@@ -78,7 +78,22 @@ const map = new maptilersdk.Map({
   terrainControl: true,
   terrain: true,
   terrainExaggeration: 1.5,
+  attributionControl: false, // Disable attribution control
 });
+
+// Hide MapLibre controls immediately after map creation
+setTimeout(() => {
+  const maptilerControls = document.querySelectorAll('.maptiler-control, .maplibregl-ctrl-group, .maplibregl-ctrl, [class*="maplibregl-ctrl"], [class*="maptiler-control"]');
+  maptilerControls.forEach(ctrl => {
+    ctrl.style.display = 'none';
+  });
+  
+  // Always hide attribution
+  const attributionControls = document.querySelectorAll('.maplibregl-ctrl-attrib, .maptiler-ctrl-attrib, [class*="attrib"], [class*="Attribution"]');
+  attributionControls.forEach(ctrl => {
+    ctrl.style.display = 'none';
+  });
+}, 0);
 
 // Simple error handling - ignore common errors
 map.on('error', (e) => {
@@ -135,6 +150,12 @@ map.on('style.load', () => {
 // Map is ready - sounds are now handled by sounds.js
 map.on('load', () => {
     console.log('🗺️ Map loaded - sounds available via window.playSound()');
+    
+    // Ensure attribution is always hidden
+    const attributionControls = document.querySelectorAll('.maplibregl-ctrl-attrib, .maptiler-ctrl-attrib, [class*="attrib"], [class*="Attribution"]');
+    attributionControls.forEach(ctrl => {
+      ctrl.style.display = 'none';
+    });
 });
 
 // Make map globally accessible for controls
